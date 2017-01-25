@@ -1,12 +1,16 @@
 package progress
 
-import "os"
-
 // progressLogger provides a wrapper around an os.File that can either
 // write to the file or ignore all writes completely.
 type progressLogger struct {
 	writeData bool
-	log       *os.File
+	log       progressLog
+}
+
+type progressLog interface {
+	Write([]byte) (int, error)
+	Close() error
+	Sync() error
 }
 
 // Write will write to the file and perform a Sync() if writing succeeds.

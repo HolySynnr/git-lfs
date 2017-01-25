@@ -2,6 +2,7 @@ package progress
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -31,6 +32,7 @@ type ProgressMeter struct {
 	fileIndex         map[string]int64 // Maps a file name to its transfer number
 	fileIndexMutex    *sync.Mutex
 	dryRun            bool
+	out               io.Writer
 }
 
 type env interface {
@@ -95,6 +97,7 @@ func NewMeter(options ...meterOption) *ProgressMeter {
 		fileIndex:      make(map[string]int64),
 		fileIndexMutex: &sync.Mutex{},
 		finished:       make(chan interface{}),
+		out:            os.Stdout,
 	}
 
 	for _, opt := range options {
@@ -105,16 +108,21 @@ func NewMeter(options ...meterOption) *ProgressMeter {
 }
 
 // Start begins sending status updates to the optional log file, and stdout.
-func (p *ProgressMeter) Start() {
+func (p *ProgressMeter) Start() bool {
 	if atomic.SwapInt32(&p.started, 1) == 0 {
 		go p.writer()
+		return true
 	}
+	return false
 }
 
-func (p *ProgressMeter) Pause() {
+func (p *ProgressMeter) Pause() bool {
 	if atomic.SwapInt32(&p.started, 0) == 1 {
 		p.finished <- true
+		return true
 	}
+
+	return false
 }
 
 // Add tells the progress meter that a single file of the given size will
@@ -164,7 +172,7 @@ func (p *ProgressMeter) Finish() {
 	p.update()
 	p.logger.Close()
 	if !p.dryRun && p.estimatedBytes > 0 {
-		fmt.Fprintf(os.Stdout, "\n")
+		fmt.Fprintf(p.out, "\n")
 	}
 }
 
@@ -207,7 +215,7 @@ func (p *ProgressMeter) update() {
 		out += fmt.Sprintf(", %s skipped", formatBytes(p.skippedBytes))
 	}
 
-	fmt.Fprintf(os.Stdout, pad(out))
+	fmt.Fprintf(p.out, pad(out))
 }
 
 func formatBytes(i int64) string {
