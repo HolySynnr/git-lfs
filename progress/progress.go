@@ -3,12 +3,12 @@
 package progress
 
 type Meter interface {
-	Start()
-	Pause()
+	Start() bool
+	Pause() bool
 	Add(int64)
 	Skip(size int64)
 	StartTransfer(name string)
 	TransferBytes(direction, name string, read, total int64, current int)
 	FinishTransfer(name string)
-	Finish()
+	Finish() bool
 }
