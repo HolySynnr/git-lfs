@@ -25,6 +25,7 @@ type ProgressMeter struct {
 	currentBytes      int64
 	skippedBytes      int64
 	started           int32
+	done              int32
 	estimatedFiles    int32
 	startTime         time.Time
 	finished          chan interface{}
@@ -109,7 +110,7 @@ func NewMeter(options ...meterOption) *ProgressMeter {
 
 // Start begins sending status updates to the optional log file, and stdout.
 func (p *ProgressMeter) Start() bool {
-	if atomic.CompareAndSwapInt32(&p.started, 0, 1) {
+	if atomic.LoadInt32(&p.done) == 0 && atomic.CompareAndSwapInt32(&p.started, 0, 1) {
 		go p.writer()
 		return true
 	}
@@ -119,7 +120,7 @@ func (p *ProgressMeter) Start() bool {
 // Pause temporarly stops sending status updates to the optional log file, and
 // stdout. Call Start() to resume.
 func (p *ProgressMeter) Pause() bool {
-	if atomic.CompareAndSwapInt32(&p.started, 1, 0) {
+	if atomic.LoadInt32(&p.done) == 0 && atomic.CompareAndSwapInt32(&p.started, 1, 0) {
 		p.finished <- true
 		return true
 	}
@@ -169,13 +170,17 @@ func (p *ProgressMeter) FinishTransfer(name string) {
 }
 
 // Finish shuts down the ProgressMeter
-func (p *ProgressMeter) Finish() {
-	close(p.finished)
-	p.update()
-	p.logger.Close()
-	if !p.dryRun && p.estimatedBytes > 0 {
-		fmt.Fprintf(p.out, "\n")
+func (p *ProgressMeter) Finish() bool {
+	if atomic.CompareAndSwapInt32(&p.done, 0, 1) {
+		close(p.finished)
+		p.update()
+		p.logger.Close()
+		if !p.dryRun && p.estimatedBytes > 0 {
+			fmt.Fprintf(p.out, "\n")
+		}
+		return true
 	}
+	return false
 }
 
 func (p *ProgressMeter) logBytes(direction, name string, read, total int64) {
