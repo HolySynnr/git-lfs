@@ -8,6 +8,10 @@ import (
 	"github.com/git-lfs/git-lfs/errors"
 	"github.com/git-lfs/git-lfs/filepathfilter"
 	"github.com/git-lfs/git-lfs/lfs"
+<<<<<<< HEAD
+=======
+	"github.com/git-lfs/git-lfs/tools/longpathos"
+>>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
 	"github.com/spf13/cobra"
 )
 
@@ -45,9 +49,17 @@ func smudge(to io.Writer, from io.Reader, filename string, skip bool, filter *fi
 		return err
 	}
 
+<<<<<<< HEAD
 	download := !skip
 	if download {
 		download = filter.Allows(filename)
+=======
+	filter := filepathfilter.New(cfg.FetchIncludePaths(), cfg.FetchExcludePaths())
+	download := filter.Allows(filename)
+
+	if skip || cfg.Os.Bool("GIT_LFS_SKIP_SMUDGE", false) {
+		download = false
+>>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
 	}
 
 	err = ptr.Smudge(to, filename, download, getTransferManifest(), cb)
@@ -78,9 +90,28 @@ func smudgeCommand(cmd *cobra.Command, args []string) {
 	}
 	filter := filepathfilter.New(cfg.FetchIncludePaths(), cfg.FetchExcludePaths())
 
+<<<<<<< HEAD
 	if err := smudge(os.Stdout, os.Stdin, smudgeFilename(args), smudgeSkip, filter); err != nil {
 		if errors.IsNotAPointerError(err) {
 			fmt.Fprintln(os.Stderr, err.Error())
+=======
+	lfs.LinkOrCopyFromReference(ptr.Oid, ptr.Size)
+
+	if smudgeInfo {
+		fmt.Fprintln(os.Stderr, "WARNING: 'smudge --info' is deprecated and will be removed in v2.0")
+		fmt.Fprintln(os.Stderr, "USE INSTEAD:")
+		fmt.Fprintln(os.Stderr, "  $ git lfs pointer --file=path/to/file")
+		fmt.Fprintln(os.Stderr, "  $ git lfs ls-files")
+		fmt.Fprintln(os.Stderr, "")
+
+		localPath, err := lfs.LocalMediaPath(ptr.Oid)
+		if err != nil {
+			Exit(err.Error())
+		}
+
+		if stat, err := longpathos.Stat(localPath); err != nil {
+			Print("%d --", ptr.Size)
+>>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
 		} else {
 			Error(err.Error())
 		}

@@ -12,13 +12,20 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+<<<<<<< HEAD
+=======
+
+	"github.com/git-lfs/git-lfs/filepathfilter"
+	"github.com/git-lfs/git-lfs/tools/longpathos"
+)
+>>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
 
 	"github.com/git-lfs/git-lfs/filepathfilter"
 )
 
 // FileOrDirExists determines if a file/dir exists, returns IsDir() results too.
 func FileOrDirExists(path string) (exists bool, isDir bool) {
-	fi, err := os.Stat(path)
+	fi, err := longpathos.Stat(path)
 	if err != nil {
 		return false, false
 	} else {
@@ -40,7 +47,7 @@ func DirExists(path string) bool {
 
 // FileExistsOfSize determines if a file exists and is of a specific size.
 func FileExistsOfSize(path string, sz int64) bool {
-	fi, err := os.Stat(path)
+	fi, err := longpathos.Stat(path)
 
 	if err != nil {
 		return false
@@ -65,7 +72,7 @@ func ResolveSymlinks(path string) string {
 // RenameFileCopyPermissions moves srcfile to destfile, replacing destfile if
 // necessary and also copying the permissions of destfile if it already exists
 func RenameFileCopyPermissions(srcfile, destfile string) error {
-	info, err := os.Stat(destfile)
+	info, err := longpathos.Stat(destfile)
 	if os.IsNotExist(err) {
 		// no original file
 	} else if err != nil {
@@ -76,7 +83,7 @@ func RenameFileCopyPermissions(srcfile, destfile string) error {
 		}
 	}
 
-	if err := os.Rename(srcfile, destfile); err != nil {
+	if err := longpathos.Rename(srcfile, destfile); err != nil {
 		return fmt.Errorf("cannot replace %q with %q: %v", destfile, srcfile, err)
 	}
 	return nil
@@ -106,7 +113,7 @@ func CleanPaths(paths, delim string) (cleaned []string) {
 // VerifyFileHash reads a file and verifies whether the SHA is correct
 // Returns an error if there is a problem
 func VerifyFileHash(oid, path string) error {
-	f, err := os.Open(path)
+	f, err := longpathos.Open(path)
 	if err != nil {
 		return err
 	}
@@ -290,6 +297,7 @@ func loadExcludeFilename(filename, parentDir string, excludePaths []filepathfilt
 	}
 
 	return retPaths, nil
+<<<<<<< HEAD
 }
 
 // SetFileWriteFlag changes write permissions on a file
@@ -319,4 +327,6 @@ func SetFileWriteFlag(path string, writeEnabled bool) error {
 		mode = mode &^ 0222 // disable all write
 	}
 	return os.Chmod(path, os.FileMode(mode))
+=======
+>>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
 }

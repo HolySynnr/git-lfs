@@ -6,8 +6,10 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/git-lfs/git-lfs/filepathfilter"
 	"github.com/git-lfs/git-lfs/localstorage"
 	"github.com/git-lfs/git-lfs/subprocess"
+	"github.com/git-lfs/git-lfs/tools/longpathos"
 
 	"github.com/git-lfs/git-lfs/git"
 	"github.com/git-lfs/git-lfs/tools"
@@ -48,13 +50,13 @@ func cloneCommand(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	err = os.Chdir(clonedir)
+	err = longpathos.Chdir(clonedir)
 	if err != nil {
 		Exit("Unable to change directory to clone dir %q: %v", clonedir, err)
 	}
 
 	// Make sure we pop back to dir we started in at the end
-	defer os.Chdir(cwd)
+	defer longpathos.Chdir(cwd)
 
 	// Also need to derive dirs now
 	localstorage.ResolveDirs()
@@ -70,6 +72,7 @@ func cloneCommand(cmd *cobra.Command, args []string) {
 	}
 
 	includeArg, excludeArg := getIncludeExcludeArgs(cmd)
+<<<<<<< HEAD
 	filter := buildFilepathFilter(cfg, includeArg, excludeArg)
 	if cloneFlags.NoCheckout || cloneFlags.Bare {
 		// If --no-checkout or --bare then we shouldn't check out, just fetch instead
@@ -77,6 +80,15 @@ func cloneCommand(cmd *cobra.Command, args []string) {
 		fetchRef("HEAD", filter)
 	} else {
 		pull(remote, filter)
+=======
+	filter := filepathfilter.New(determineIncludeExcludePaths(cfg, includeArg, excludeArg))
+	if cloneFlags.NoCheckout || cloneFlags.Bare {
+		// If --no-checkout or --bare then we shouldn't check out, just fetch instead
+		fetchRef("HEAD", filter)
+	} else {
+		pull(filter)
+
+>>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
 		err := postCloneSubmodules(args)
 		if err != nil {
 			Exit("Error performing 'git lfs pull' for submodules: %v", err)

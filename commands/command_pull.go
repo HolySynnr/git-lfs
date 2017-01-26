@@ -35,17 +35,26 @@ func pullCommand(cmd *cobra.Command, args []string) {
 	}
 
 	includeArg, excludeArg := getIncludeExcludeArgs(cmd)
+<<<<<<< HEAD
 	filter := buildFilepathFilter(cfg, includeArg, excludeArg)
 	pull(remote, filter)
 }
 
 func pull(remote string, filter *filepathfilter.Filter) {
 	cfg.CurrentRemote = remote
+=======
+	pull(filepathfilter.New(determineIncludeExcludePaths(cfg, includeArg, excludeArg)))
+
+}
+
+func pull(filter *filepathfilter.Filter) {
+>>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
 	ref, err := git.CurrentRef()
 	if err != nil {
 		Panic(err, "Could not pull")
 	}
 
+<<<<<<< HEAD
 	pointers := newPointerMap()
 	meter := progress.NewMeter(progress.WithOSEnv(cfg.Os))
 	singleCheckout := newSingleCheckout()
@@ -139,6 +148,10 @@ func (m *pointerMap) All(oid string) []*lfs.WrappedPointer {
 	pointers := m.pointers[oid]
 	delete(m.pointers, oid)
 	return pointers
+=======
+	c := fetchRefToChan(ref.Sha, filter)
+	checkoutFromFetchChan(filter, c)
+>>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
 }
 
 func init() {

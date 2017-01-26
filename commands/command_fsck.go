@@ -10,6 +10,7 @@ import (
 	"github.com/git-lfs/git-lfs/config"
 	"github.com/git-lfs/git-lfs/git"
 	"github.com/git-lfs/git-lfs/lfs"
+	"github.com/git-lfs/git-lfs/tools/longpathos"
 	"github.com/spf13/cobra"
 )
 
@@ -69,9 +70,21 @@ func fsckCommand(cmd *cobra.Command, args []string) {
 	badDir := filepath.Join(config.LocalGitStorageDir, "lfs", "bad")
 	Print("Moving corrupt objects to %s", badDir)
 
+<<<<<<< HEAD
 	if err := os.MkdirAll(badDir, 0755); err != nil {
 		ExitWithError(err)
 	}
+=======
+		f, err := longpathos.Open(path)
+		if pErr, pOk := err.(*os.PathError); pOk {
+			Print("Object %s (%s) could not be checked: %s", name, oid, pErr.Err)
+			ok = false
+			continue
+		}
+		if err != nil {
+			return false, err
+		}
+>>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
 
 	for _, oid := range corruptOids {
 		badFile := filepath.Join(badDir, oid)
@@ -84,12 +97,26 @@ func fsckCommand(cmd *cobra.Command, args []string) {
 func fsckPointer(name, oid string) (bool, error) {
 	path := lfs.LocalMediaPathReadOnly(oid)
 
+<<<<<<< HEAD
 	Debug("Examining %v (%v)", name, path)
 
 	f, err := os.Open(path)
 	if pErr, pOk := err.(*os.PathError); pOk {
 		Print("Object %s (%s) could not be checked: %s", name, oid, pErr.Err)
 		return false, nil
+=======
+			badDir := filepath.Join(config.LocalGitStorageDir, "lfs", "bad")
+			if err := longpathos.MkdirAll(badDir, 0755); err != nil {
+				return false, err
+			}
+
+			badFile := filepath.Join(badDir, oid)
+			if err := longpathos.Rename(path, badFile); err != nil {
+				return false, err
+			}
+			Print("  moved to %s", badFile)
+		}
+>>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
 	}
 
 	if err != nil {

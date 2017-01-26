@@ -1,4 +1,5 @@
 #define MyAppName "Git LFS"
+<<<<<<< HEAD
 
 ; Arbitrarily choose the x86 executable here as both have the version embedded.
 #define MyVersionInfoVersion GetFileVersion("..\..\git-lfs-x86.exe")
@@ -7,6 +8,10 @@
 #define MyAppVersion RemoveFileExt(MyVersionInfoVersion)
 
 #define MyAppPublisher "GitHub, Inc."
+=======
+#define MyAppVersion "1.5.3"
+#define MyAppPublisher "GitHub, Inc"
+>>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
 #define MyAppURL "https://git-lfs.github.com/"
 #define MyAppFilePrefix "git-lfs-windows"
 

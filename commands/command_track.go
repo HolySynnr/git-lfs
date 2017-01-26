@@ -13,6 +13,11 @@ import (
 	"github.com/git-lfs/git-lfs/config"
 	"github.com/git-lfs/git-lfs/git"
 	"github.com/git-lfs/git-lfs/lfs"
+<<<<<<< HEAD
+=======
+	"github.com/git-lfs/git-lfs/tools"
+	"github.com/git-lfs/git-lfs/tools/longpathos"
+>>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
 	"github.com/spf13/cobra"
 )
 
@@ -55,6 +60,23 @@ func trackCommand(cmd *cobra.Command, args []string) {
 		return
 	}
 
+<<<<<<< HEAD
+=======
+	addTrailingLinebreak := needsTrailingLinebreak(".gitattributes")
+	attributesFile, err := longpathos.OpenFile(".gitattributes", os.O_RDWR|os.O_APPEND|os.O_CREATE, 0660)
+	if err != nil {
+		Print("Error opening .gitattributes file")
+		return
+	}
+	defer attributesFile.Close()
+
+	if addTrailingLinebreak {
+		if _, werr := attributesFile.WriteString("\n"); werr != nil {
+			Print("Error writing to .gitattributes")
+		}
+	}
+
+>>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
 	wd, _ := os.Getwd()
 	relpath, err := filepath.Rel(config.LocalWorkingDir, wd)
 	if err != nil {
@@ -181,7 +203,7 @@ ArgsLoop:
 
 			if !trackDryRunFlag {
 				now := time.Now()
-				err := os.Chtimes(f, now, now)
+				err := longpathos.Chtimes(f, now, now)
 				if err != nil {
 					LoggedError(err, "Error marking %q modified", f)
 					continue
@@ -189,9 +211,73 @@ ArgsLoop:
 			}
 		}
 	}
+<<<<<<< HEAD
 	// now flip read-only mode based on lockable / not lockable changes
 	lockClient := newLockClient(cfg.CurrentRemote)
 	err = lockClient.FixFileWriteFlagsInDir(relpath, readOnlyPatterns, writeablePatterns)
+=======
+}
+
+type mediaPattern struct {
+	Pattern string
+	Source  string
+}
+
+func findPatterns() []mediaPattern {
+	var patterns []mediaPattern
+
+	for _, path := range findAttributeFiles() {
+		attributes, err := longpathos.Open(path)
+		if err != nil {
+			continue
+		}
+
+		scanner := bufio.NewScanner(attributes)
+
+		for scanner.Scan() {
+			line := scanner.Text()
+			if strings.Contains(line, "filter=lfs") {
+				fields := strings.Fields(line)
+				relfile, _ := filepath.Rel(config.LocalWorkingDir, path)
+				pattern := fields[0]
+				if reldir := filepath.Dir(relfile); len(reldir) > 0 {
+					pattern = filepath.Join(reldir, pattern)
+				}
+
+				patterns = append(patterns, mediaPattern{Pattern: pattern, Source: relfile})
+			}
+		}
+	}
+
+	return patterns
+}
+
+func findAttributeFiles() []string {
+	var paths []string
+
+	repoAttributes := filepath.Join(config.LocalGitDir, "info", "attributes")
+	if info, err := longpathos.Stat(repoAttributes); err == nil && !info.IsDir() {
+		paths = append(paths, repoAttributes)
+	}
+
+	tools.FastWalkGitRepo(config.LocalWorkingDir, func(parentDir string, info os.FileInfo, err error) {
+		if err != nil {
+			tracerx.Printf("Error finding .gitattributes: %v", err)
+			return
+		}
+
+		if info.IsDir() || info.Name() != ".gitattributes" {
+			return
+		}
+		paths = append(paths, filepath.Join(parentDir, info.Name()))
+	})
+
+	return paths
+}
+
+func needsTrailingLinebreak(filename string) bool {
+	file, err := longpathos.Open(filename)
+>>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
 	if err != nil {
 		LoggedError(err, "Error changing lockable file permissions")
 	}

@@ -16,7 +16,11 @@ import (
 	"github.com/git-lfs/git-lfs/lfsapi"
 	"github.com/git-lfs/git-lfs/progress"
 	"github.com/git-lfs/git-lfs/test"
+<<<<<<< HEAD
 	"github.com/git-lfs/git-lfs/tq"
+=======
+	"github.com/git-lfs/git-lfs/tools/longpathos"
+>>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
 	"github.com/spf13/cobra"
 )
 
@@ -109,7 +113,7 @@ func testServerApi(cmd *cobra.Command, args []string) {
 }
 
 func readTestOids(filename string) []TestObject {
-	f, err := os.OpenFile(filename, os.O_RDONLY, 0644)
+	f, err := longpathos.OpenFile(filename, os.O_RDONLY, 0644)
 	if err != nil {
 		exit("Error opening file %s", filename)
 	}
@@ -205,7 +209,7 @@ func buildTestData(manifest *tq.Manifest) (oidsExist, oidsMissing []TestObject, 
 }
 
 func saveTestOids(filename string, objs []TestObject) {
-	f, err := os.OpenFile(filename, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
+	f, err := longpathos.OpenFile(filename, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 	if err != nil {
 		exit("Error opening file %s", filename)
 	}

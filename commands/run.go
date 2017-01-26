@@ -9,7 +9,11 @@ import (
 	"time"
 
 	"github.com/git-lfs/git-lfs/config"
+<<<<<<< HEAD
 	"github.com/git-lfs/git-lfs/lfsapi"
+=======
+	"github.com/git-lfs/git-lfs/httputil"
+>>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
 	"github.com/git-lfs/git-lfs/localstorage"
 	"github.com/spf13/cobra"
 )

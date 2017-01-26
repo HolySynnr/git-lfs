@@ -11,6 +11,7 @@ import (
 	"github.com/git-lfs/git-lfs/errors"
 	"github.com/git-lfs/git-lfs/lfsapi"
 	"github.com/git-lfs/git-lfs/progress"
+	"github.com/git-lfs/git-lfs/tools/longpathos"
 	"github.com/rubyist/tracerx"
 )
 
@@ -78,7 +79,7 @@ func (a *tusUploadAdapter) DoTransfer(ctx interface{}, t *Transfer, cb ProgressC
 	}
 
 	// Open file for uploading
-	f, err := os.OpenFile(t.Path, os.O_RDONLY, 0644)
+	f, err := longpathos.OpenFile(t.Path, os.O_RDONLY, 0644)
 	if err != nil {
 		return errors.Wrap(err, "tus upload")
 	}

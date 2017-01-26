@@ -109,9 +109,31 @@ func (s *catFileBatchScanner) next() (*WrappedPointer, error) {
 		return nil, err
 	}
 
+<<<<<<< HEAD
 	if size != read {
 		return nil, fmt.Errorf("expected %d bytes, read %d bytes", size, read)
 	}
+=======
+		size, _ := strconv.Atoi(string(fields[2]))
+		buf := make([]byte, size)
+		read, err := io.ReadFull(r, buf)
+		if err != nil {
+			return nil, err
+		}
+
+		if size != read {
+			return nil, fmt.Errorf("expected %d bytes, read %d bytes", size, read)
+		}
+
+		p, err := DecodePointer(bytes.NewBuffer(buf[0:read]))
+		if err == nil {
+			pointer = &WrappedPointer{
+				Sha1:    string(fields[0]),
+				Size:    p.Size,
+				Pointer: p,
+			}
+		}
+>>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
 
 	p, err := DecodePointer(bytes.NewBuffer(buf[:read]))
 	var pointer *WrappedPointer

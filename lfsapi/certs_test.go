@@ -3,11 +3,19 @@ package lfsapi
 import (
 	"fmt"
 	"io/ioutil"
+<<<<<<< HEAD:lfsapi/certs_test.go
 	"net/http"
 	"os"
 	"path/filepath"
 	"testing"
 
+=======
+	"path/filepath"
+	"testing"
+
+	"github.com/git-lfs/git-lfs/config"
+	"github.com/git-lfs/git-lfs/tools/longpathos"
+>>>>>>> refs/remotes/git-lfs/1.5/filepathfilter:httputil/certs_test.go
 	"github.com/stretchr/testify/assert"
 )
 
@@ -51,7 +59,7 @@ var sslCAInfoMatchedHostTests = []struct {
 func TestCertFromSSLCAInfoConfig(t *testing.T) {
 	tempfile, err := ioutil.TempFile("", "testcert")
 	assert.Nil(t, err, "Error creating temp cert file")
-	defer os.Remove(tempfile.Name())
+	defer longpathos.Remove(tempfile.Name())
 
 	_, err = tempfile.WriteString(testCert)
 	assert.Nil(t, err, "Error writing temp cert file")
@@ -97,7 +105,7 @@ func TestCertFromSSLCAInfoConfig(t *testing.T) {
 func TestCertFromSSLCAInfoEnv(t *testing.T) {
 	tempfile, err := ioutil.TempFile("", "testcert")
 	assert.Nil(t, err, "Error creating temp cert file")
-	defer os.Remove(tempfile.Name())
+	defer longpathos.Remove(tempfile.Name())
 
 	_, err = tempfile.WriteString(testCert)
 	assert.Nil(t, err, "Error writing temp cert file")
@@ -118,7 +126,7 @@ func TestCertFromSSLCAInfoEnv(t *testing.T) {
 func TestCertFromSSLCAPathConfig(t *testing.T) {
 	tempdir, err := ioutil.TempDir("", "testcertdir")
 	assert.Nil(t, err, "Error creating temp cert dir")
-	defer os.RemoveAll(tempdir)
+	defer longpathos.RemoveAll(tempdir)
 
 	err = ioutil.WriteFile(filepath.Join(tempdir, "cert1.pem"), []byte(testCert), 0644)
 	assert.Nil(t, err, "Error creating cert file")
@@ -139,7 +147,7 @@ func TestCertFromSSLCAPathConfig(t *testing.T) {
 func TestCertFromSSLCAPathEnv(t *testing.T) {
 	tempdir, err := ioutil.TempDir("", "testcertdir")
 	assert.Nil(t, err, "Error creating temp cert dir")
-	defer os.RemoveAll(tempdir)
+	defer longpathos.RemoveAll(tempdir)
 
 	err = ioutil.WriteFile(filepath.Join(tempdir, "cert1.pem"), []byte(testCert), 0644)
 	assert.Nil(t, err, "Error creating cert file")

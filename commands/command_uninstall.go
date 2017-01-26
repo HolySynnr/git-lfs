@@ -13,7 +13,13 @@ func uninstallCommand(cmd *cobra.Command, args []string) {
 		Error(err.Error())
 	}
 
+<<<<<<< HEAD
 	if localInstall || lfs.InRepo() {
+=======
+	Print("Global Git LFS configuration has been removed.")
+
+	if lfs.InRepo() {
+>>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
 		localstorage.InitStorageOrFail()
 		uninstallHooksCommand(cmd, args)
 	}

@@ -11,6 +11,7 @@ import (
 	"github.com/git-lfs/git-lfs/errors"
 	"github.com/git-lfs/git-lfs/lfsapi"
 	"github.com/git-lfs/git-lfs/progress"
+	"github.com/git-lfs/git-lfs/tools/longpathos"
 )
 
 const (
@@ -24,13 +25,13 @@ type basicUploadAdapter struct {
 
 func (a *basicUploadAdapter) ClearTempStorage() error {
 	// Should be empty already but also remove dir
-	return os.RemoveAll(a.tempDir())
+	return longpathos.RemoveAll(a.tempDir())
 }
 
 func (a *basicUploadAdapter) tempDir() string {
 	// Must be dedicated to this adapter as deleted by ClearTempStorage
 	d := filepath.Join(os.TempDir(), "git-lfs-basic-temp")
-	if err := os.MkdirAll(d, 0755); err != nil {
+	if err := longpathos.MkdirAll(d, 0755); err != nil {
 		return os.TempDir()
 	}
 	return d
@@ -66,7 +67,7 @@ func (a *basicUploadAdapter) DoTransfer(ctx interface{}, t *Transfer, cb Progres
 
 	req.ContentLength = t.Size
 
-	f, err := os.OpenFile(t.Path, os.O_RDONLY, 0644)
+	f, err := longpathos.OpenFile(t.Path, os.O_RDONLY, 0644)
 	if err != nil {
 		return errors.Wrap(err, "basic upload")
 	}

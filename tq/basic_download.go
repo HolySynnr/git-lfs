@@ -12,6 +12,7 @@ import (
 	"github.com/git-lfs/git-lfs/errors"
 	"github.com/git-lfs/git-lfs/localstorage"
 	"github.com/git-lfs/git-lfs/tools"
+	"github.com/git-lfs/git-lfs/tools/longpathos"
 	"github.com/rubyist/tracerx"
 )
 
@@ -21,7 +22,7 @@ type basicDownloadAdapter struct {
 }
 
 func (a *basicDownloadAdapter) ClearTempStorage() error {
-	return os.RemoveAll(a.tempDir())
+	return longpathos.RemoveAll(a.tempDir())
 }
 
 func (a *basicDownloadAdapter) tempDir() string {
@@ -29,7 +30,7 @@ func (a *basicDownloadAdapter) tempDir() string {
 	// Also make local to this repo not global, and separate to localstorage temp,
 	// which gets cleared at the end of every invocation
 	d := filepath.Join(localstorage.Objects().RootDir, "incomplete")
-	if err := os.MkdirAll(d, 0755); err != nil {
+	if err := longpathos.MkdirAll(d, 0755); err != nil {
 		return os.TempDir()
 	}
 	return d
@@ -53,11 +54,11 @@ func (a *basicDownloadAdapter) DoTransfer(ctx interface{}, t *Transfer, cb Progr
 func (a *basicDownloadAdapter) checkResumeDownload(t *Transfer) (outFile *os.File, fromByte int64, hashSoFar hash.Hash, e error) {
 	// lock the file by opening it for read/write, rather than checking Stat() etc
 	// which could be subject to race conditions by other processes
-	f, err := os.OpenFile(a.downloadFilename(t), os.O_RDWR, 0644)
+	f, err := longpathos.OpenFile(a.downloadFilename(t), os.O_RDWR, 0644)
 
 	if err != nil {
 		// Create a new file instead, must not already exist or error (permissions / race condition)
-		newfile, err := os.OpenFile(a.downloadFilename(t), os.O_CREATE|os.O_WRONLY|os.O_EXCL, 0644)
+		newfile, err := longpathos.OpenFile(a.downloadFilename(t), os.O_CREATE|os.O_WRONLY|os.O_EXCL, 0644)
 		return newfile, 0, nil, err
 	}
 
@@ -113,7 +114,7 @@ func (a *basicDownloadAdapter) download(t *Transfer, cb ProgressCallback, authOk
 		if fromByte > 0 && dlFile != nil && res.StatusCode == 416 {
 			tracerx.Printf("xfer: server rejected resume download request for %q from byte %d; re-downloading from start", t.Oid, fromByte)
 			dlFile.Close()
-			os.Remove(dlFile.Name())
+			longpathos.Remove(dlFile.Name())
 			return a.download(t, cb, authOkFunc, nil, 0, nil)
 		}
 		return errors.NewRetriableError(err)
@@ -155,7 +156,7 @@ func (a *basicDownloadAdapter) download(t *Transfer, cb ProgressCallback, authOk
 			// Abort resume, perform regular download
 			tracerx.Printf("xfer: failed to resume download for %q from byte %d: %s. Re-downloading from start", t.Oid, fromByte, failReason)
 			dlFile.Close()
-			os.Remove(dlFile.Name())
+			longpathos.Remove(dlFile.Name())
 			if res.StatusCode == 200 {
 				// If status code was 200 then server just ignored Range header and
 				// sent everything. Don't re-request, use this one from byte 0
@@ -187,7 +188,7 @@ func (a *basicDownloadAdapter) download(t *Transfer, cb ProgressCallback, authOk
 
 	if dlFile == nil {
 		// New file start
-		dlFile, err = os.OpenFile(a.downloadFilename(t), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+		dlFile, err = longpathos.OpenFile(a.downloadFilename(t), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 		if err != nil {
 			return err
 		}

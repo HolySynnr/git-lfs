@@ -8,7 +8,10 @@ import (
 	"github.com/git-lfs/git-lfs/git"
 	"github.com/git-lfs/git-lfs/lfs"
 	"github.com/git-lfs/git-lfs/progress"
+<<<<<<< HEAD
 	"github.com/git-lfs/git-lfs/tq"
+=======
+>>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
 	"github.com/rubyist/tracerx"
 	"github.com/spf13/cobra"
 )
@@ -80,7 +83,11 @@ func fetchCommand(cmd *cobra.Command, args []string) {
 		success = fetchAll()
 
 	} else { // !all
+<<<<<<< HEAD
 		filter := buildFilepathFilter(cfg, include, exclude)
+=======
+		filter := filepathfilter.New(determineIncludeExcludePaths(cfg, include, exclude))
+>>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
 
 		// Fetch refs sequentially per arg order; duplicates in later refs will be ignored
 		for _, ref := range refs {
@@ -120,10 +127,21 @@ func pointersToFetchForRef(ref string, filter *filepathfilter.Filter) ([]*lfs.Wr
 			return
 		}
 
+<<<<<<< HEAD
 		pointers = append(pointers, p)
 	})
 
 	tempgitscanner.Filter = filter
+=======
+func fetchRefToChan(ref string, filter *filepathfilter.Filter) chan *lfs.WrappedPointer {
+	c := make(chan *lfs.WrappedPointer)
+	pointers, err := pointersToFetchForRef(ref)
+	if err != nil {
+		Panic(err, "Could not scan for Git LFS files")
+	}
+
+	go fetchAndReportToChan(pointers, filter, c)
+>>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
 
 	if err := tempgitscanner.ScanTree(ref); err != nil {
 		return nil, err
@@ -135,16 +153,25 @@ func pointersToFetchForRef(ref string, filter *filepathfilter.Filter) ([]*lfs.Wr
 
 // Fetch all binaries for a given ref (that we don't have already)
 func fetchRef(ref string, filter *filepathfilter.Filter) bool {
+<<<<<<< HEAD
 	pointers, err := pointersToFetchForRef(ref, filter)
 	if err != nil {
 		Panic(err, "Could not scan for Git LFS files")
 	}
 	return fetchAndReportToChan(pointers, filter, nil)
+=======
+	pointers, err := pointersToFetchForRef(ref)
+	if err != nil {
+		Panic(err, "Could not scan for Git LFS files")
+	}
+	return fetchPointers(pointers, filter)
+>>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
 }
 
 // Fetch all previous versions of objects from since to ref (not including final state at ref)
 // So this will fetch all the '-' sides of the diff from since to ref
 func fetchPreviousVersions(ref string, since time.Time, filter *filepathfilter.Filter) bool {
+<<<<<<< HEAD
 	var pointers []*lfs.WrappedPointer
 
 	tempgitscanner := lfs.NewGitScanner(func(p *lfs.WrappedPointer, err error) {
@@ -164,6 +191,13 @@ func fetchPreviousVersions(ref string, since time.Time, filter *filepathfilter.F
 
 	tempgitscanner.Close()
 	return fetchAndReportToChan(pointers, filter, nil)
+=======
+	pointers, err := lfs.ScanPreviousVersions(ref, since)
+	if err != nil {
+		Panic(err, "Could not scan for Git LFS previous versions")
+	}
+	return fetchPointers(pointers, filter)
+>>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
 }
 
 // Fetch recent objects based on config
@@ -224,7 +258,11 @@ func fetchRecent(alreadyFetchedRefs []*git.Ref, filter *filepathfilter.Filter) b
 func fetchAll() bool {
 	pointers := scanAll()
 	Print("Fetching objects...")
+<<<<<<< HEAD
 	return fetchAndReportToChan(pointers, nil, nil)
+=======
+	return fetchPointers(pointers, nil)
+>>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
 }
 
 func scanAll() []*lfs.WrappedPointer {
@@ -265,6 +303,13 @@ func scanAll() []*lfs.WrappedPointer {
 	return pointers
 }
 
+<<<<<<< HEAD
+=======
+func fetchPointers(pointers []*lfs.WrappedPointer, filter *filepathfilter.Filter) bool {
+	return fetchAndReportToChan(pointers, filter, nil)
+}
+
+>>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
 // Fetch and report completion of each OID to a channel (optional, pass nil to skip)
 // Returns true if all completed with no errors, false if errors were written to stderr/log
 func fetchAndReportToChan(allpointers []*lfs.WrappedPointer, filter *filepathfilter.Filter, out chan<- *lfs.WrappedPointer) bool {
@@ -278,8 +323,13 @@ func fetchAndReportToChan(allpointers []*lfs.WrappedPointer, filter *filepathfil
 		cfg.CurrentRemote = defaultRemote
 	}
 
+<<<<<<< HEAD
 	ready, pointers, meter := readyAndMissingPointers(allpointers, filter)
 	q := newDownloadQueue(getTransferManifest(), cfg.CurrentRemote, tq.WithProgress(meter))
+=======
+	ready, pointers, totalSize := readyAndMissingPointers(allpointers, filter)
+	q := lfs.NewDownloadQueue(len(pointers), totalSize, false)
+>>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
 
 	if out != nil {
 		// If we already have it, or it won't be fetched
@@ -330,13 +380,26 @@ func fetchAndReportToChan(allpointers []*lfs.WrappedPointer, filter *filepathfil
 	return ok
 }
 
+<<<<<<< HEAD
 func readyAndMissingPointers(allpointers []*lfs.WrappedPointer, filter *filepathfilter.Filter) ([]*lfs.WrappedPointer, []*lfs.WrappedPointer, *progress.ProgressMeter) {
 	meter := buildProgressMeter(false)
+=======
+func readyAndMissingPointers(allpointers []*lfs.WrappedPointer, filter *filepathfilter.Filter) ([]*lfs.WrappedPointer, []*lfs.WrappedPointer, int64) {
+	size := int64(0)
+>>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
 	seen := make(map[string]bool, len(allpointers))
 	missing := make([]*lfs.WrappedPointer, 0, len(allpointers))
 	ready := make([]*lfs.WrappedPointer, 0, len(allpointers))
 
 	for _, p := range allpointers {
+<<<<<<< HEAD
+=======
+		// Filtered out by --include or --exclude
+		if !filter.Allows(p.Name) {
+			continue
+		}
+
+>>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
 		// no need to download the same object multiple times
 		if seen[p.Oid] {
 			continue

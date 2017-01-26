@@ -43,11 +43,14 @@ func filterCommand(cmd *cobra.Command, args []string) {
 		ExitWithError(err)
 	}
 
+<<<<<<< HEAD
 	skip := filterSmudgeSkip || cfg.Os.Bool("GIT_LFS_SKIP_SMUDGE", false)
 	filter := filepathfilter.New(cfg.FetchIncludePaths(), cfg.FetchExcludePaths())
 
 	var malformed []string
 
+=======
+>>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
 	for s.Scan() {
 		var err error
 		var w *git.PktlineWriter
@@ -65,11 +68,14 @@ func filterCommand(cmd *cobra.Command, args []string) {
 			err = smudge(w, req.Payload, req.Header["pathname"], skip, filter)
 		default:
 			ExitWithError(fmt.Errorf("Unknown command %q", req.Header["command"]))
+<<<<<<< HEAD
 		}
 
 		if errors.IsNotAPointerError(err) {
 			malformed = append(malformed, req.Header["pathname"])
 			err = nil
+=======
+>>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
 		}
 
 		var status string

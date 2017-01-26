@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/git-lfs/git-lfs/git"
+	"github.com/git-lfs/git-lfs/tools/longpathos"
 	"github.com/spf13/cobra"
 )
 
@@ -73,7 +74,7 @@ func lockPath(file string) (string, error) {
 	abs := filepath.Join(wd, file)
 	path := strings.TrimPrefix(abs, repo)
 
-	if stat, err := os.Stat(abs); err != nil {
+	if stat, err := longpathos.Stat(abs); err != nil {
 		return "", err
 	} else {
 		if stat.IsDir() {

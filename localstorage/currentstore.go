@@ -8,6 +8,10 @@ import (
 
 	"github.com/git-lfs/git-lfs/config"
 	"github.com/git-lfs/git-lfs/errors"
+<<<<<<< HEAD
+=======
+	"github.com/git-lfs/git-lfs/tools/longpathos"
+>>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
 )
 
 const (
@@ -44,7 +48,11 @@ func InitStorage() error {
 
 	objects = objs
 	config.LocalLogDir = filepath.Join(objs.RootDir, "logs")
+<<<<<<< HEAD
 	if err := os.MkdirAll(config.LocalLogDir, localLogDirPerms); err != nil {
+=======
+	if err := longpathos.MkdirAll(config.LocalLogDir, localLogDirPerms); err != nil {
+>>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
 		return errors.Wrap(err, "create log dir")
 	}
 
@@ -69,7 +77,7 @@ func ResolveDirs() {
 
 func TempFile(prefix string) (*os.File, error) {
 	if checkedTempDir != TempDir {
-		if err := os.MkdirAll(TempDir, tempDirPerms); err != nil {
+		if err := longpathos.MkdirAll(TempDir, tempDirPerms); err != nil {
 			return nil, err
 		}
 		checkedTempDir = TempDir
@@ -80,5 +88,5 @@ func TempFile(prefix string) (*os.File, error) {
 
 func ResetTempDir() error {
 	checkedTempDir = ""
-	return os.RemoveAll(TempDir)
+	return longpathos.RemoveAll(TempDir)
 }

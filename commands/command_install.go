@@ -28,7 +28,11 @@ func installCommand(cmd *cobra.Command, args []string) {
 		Exit("Run `git lfs install --force` to reset git config.")
 	}
 
+<<<<<<< HEAD
 	if !skipRepoInstall && (localInstall || lfs.InRepo()) {
+=======
+	if localInstall || lfs.InRepo() {
+>>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
 		localstorage.InitStorageOrFail()
 		installHooksCommand(cmd, args)
 	}

@@ -16,6 +16,13 @@ import (
 	"github.com/rubyist/tracerx"
 )
 
+<<<<<<< HEAD
+=======
+const (
+	Version = "1.5.3"
+)
+
+>>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
 var (
 	LargeSizeThreshold = 5 * 1024 * 1024
 )

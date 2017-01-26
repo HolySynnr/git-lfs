@@ -10,6 +10,10 @@ import (
 
 var (
 	GitCommit   string
+<<<<<<< HEAD
+=======
+	Version     = "1.5.3"
+>>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
 	VersionDesc string
 )
 

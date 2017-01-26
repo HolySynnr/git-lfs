@@ -261,6 +261,7 @@ begin_test "install in directory without access to .git/lfs"
   [ "git-lfs clean -- %f" = "$(git config filter.lfs.clean)" ]
 )
 end_test
+<<<<<<< HEAD
 
 
 begin_test "install in repo without changing hooks"
@@ -283,3 +284,5 @@ begin_test "install in repo without changing hooks"
   [ "git-lfs filter-process" = "$(git config filter.lfs.process)" ]
 )
 end_test
+=======
+>>>>>>> refs/remotes/git-lfs/1.5/filepathfilter

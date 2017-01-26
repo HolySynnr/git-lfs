@@ -8,7 +8,12 @@ import (
 
 	"github.com/cheggaaa/pb"
 	"github.com/git-lfs/git-lfs/tools"
+<<<<<<< HEAD
 	"github.com/git-lfs/git-lfs/tq"
+=======
+	"github.com/git-lfs/git-lfs/tools/longpathos"
+	"github.com/git-lfs/git-lfs/transfer"
+>>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
 
 	"github.com/git-lfs/git-lfs/config"
 	"github.com/git-lfs/git-lfs/errors"
@@ -16,9 +21,15 @@ import (
 	"github.com/rubyist/tracerx"
 )
 
+<<<<<<< HEAD
 func PointerSmudgeToFile(filename string, ptr *Pointer, download bool, manifest *tq.Manifest, cb progress.CopyCallback) error {
 	os.MkdirAll(filepath.Dir(filename), 0755)
 	file, err := os.Create(filename)
+=======
+func PointerSmudgeToFile(filename string, ptr *Pointer, download bool, manifest *transfer.Manifest, cb progress.CopyCallback) error {
+	longpathos.MkdirAll(filepath.Dir(filename), 0755)
+	file, err := longpathos.Create(filename)
+>>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
 	if err != nil {
 		return fmt.Errorf("Could not create working directory file: %v", err)
 	}
@@ -44,12 +55,12 @@ func PointerSmudge(writer io.Writer, ptr *Pointer, workingfile string, download 
 
 	LinkOrCopyFromReference(ptr.Oid, ptr.Size)
 
-	stat, statErr := os.Stat(mediafile)
+	stat, statErr := longpathos.Stat(mediafile)
 	if statErr == nil && stat != nil {
 		fileSize := stat.Size()
 		if fileSize == 0 || fileSize != ptr.Size {
 			tracerx.Printf("Removing %s, size %d is invalid", mediafile, fileSize)
-			os.RemoveAll(mediafile)
+			longpathos.RemoveAll(mediafile)
 			stat = nil
 		}
 	}
@@ -94,14 +105,14 @@ func downloadFile(writer io.Writer, ptr *Pointer, workingfile, mediafile string,
 }
 
 func readLocalFile(writer io.Writer, ptr *Pointer, mediafile string, workingfile string, cb progress.CopyCallback) error {
-	reader, err := os.Open(mediafile)
+	reader, err := longpathos.Open(mediafile)
 	if err != nil {
 		return errors.Wrapf(err, "Error opening media file.")
 	}
 	defer reader.Close()
 
 	if ptr.Size == 0 {
-		if stat, _ := os.Stat(mediafile); stat != nil {
+		if stat, _ := longpathos.Stat(mediafile); stat != nil {
 			ptr.Size = stat.Size()
 		}
 	}
@@ -162,7 +173,7 @@ func readLocalFile(writer io.Writer, ptr *Pointer, mediafile string, workingfile
 		}
 
 		// setup reader
-		reader, err = os.Open(response.file.Name())
+		reader, err = longpathos.Open(response.file.Name())
 		if err != nil {
 			return errors.Wrapf(err, "Error opening smudged file: %s", err)
 		}

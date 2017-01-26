@@ -18,6 +18,7 @@ import (
 	"github.com/git-lfs/git-lfs/lfsapi"
 	"github.com/git-lfs/git-lfs/progress"
 	"github.com/git-lfs/git-lfs/tools"
+	"github.com/git-lfs/git-lfs/tools/longpathos"
 )
 
 var cfg = config.New()
@@ -138,12 +139,12 @@ func performDownload(apiClient *lfsapi.Client, oid string, size int64, a *action
 	_, err = tools.CopyWithCallback(dlFile, res.Body, res.ContentLength, cb)
 	if err != nil {
 		sendTransferError(oid, 4, fmt.Sprintf("cannot write data to tempfile %q: %v", dlfilename, err), writer, errWriter)
-		os.Remove(dlfilename)
+		longpathos.Remove(dlfilename)
 		return
 	}
 	if err := dlFile.Close(); err != nil {
 		sendTransferError(oid, 5, fmt.Sprintf("can't close tempfile %q: %v", dlfilename, err), writer, errWriter)
-		os.Remove(dlfilename)
+		longpathos.Remove(dlfilename)
 		return
 	}
 
@@ -180,7 +181,7 @@ func performUpload(apiClient *lfsapi.Client, oid string, size int64, a *action, 
 
 	req.ContentLength = size
 
-	f, err := os.OpenFile(fromPath, os.O_RDONLY, 0644)
+	f, err := longpathos.OpenFile(fromPath, os.O_RDONLY, 0644)
 	if err != nil {
 		sendTransferError(oid, 3, fmt.Sprintf("Cannot read data from %q: %v", fromPath, err), writer, errWriter)
 		return

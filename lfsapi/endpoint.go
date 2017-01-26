@@ -17,6 +17,65 @@ type Endpoint struct {
 	SshPort        string
 }
 
+<<<<<<< HEAD:lfsapi/endpoint.go
+=======
+// NewEndpointFromCloneURL creates an Endpoint from a git clone URL by appending
+// "[.git]/info/lfs".
+func NewEndpointFromCloneURL(url string) Endpoint {
+	return NewEndpointFromCloneURLWithConfig(url, New())
+}
+
+// NewEndpoint initializes a new Endpoint for a given URL.
+func NewEndpoint(rawurl string) Endpoint {
+	return NewEndpointWithConfig(rawurl, New())
+}
+
+// NewEndpointFromCloneURLWithConfig creates an Endpoint from a git clone URL by appending
+// "[.git]/info/lfs".
+func NewEndpointFromCloneURLWithConfig(url string, c *Configuration) Endpoint {
+	e := NewEndpointWithConfig(url, c)
+	if e.Url == EndpointUrlUnknown {
+		return e
+	}
+
+	if strings.HasSuffix(url, "/") {
+		e.Url = url[0 : len(url)-1]
+	}
+
+	// When using main remote URL for HTTP, append info/lfs
+	if path.Ext(e.Url) == ".git" {
+		e.Url += "/info/lfs"
+	} else {
+		e.Url += ".git/info/lfs"
+	}
+
+	return e
+}
+
+// NewEndpointWithConfig initializes a new Endpoint for a given URL.
+func NewEndpointWithConfig(rawurl string, c *Configuration) Endpoint {
+	rawurl = c.ReplaceUrlAlias(rawurl)
+	u, err := url.Parse(rawurl)
+	if err != nil {
+		return endpointFromBareSshUrl(rawurl)
+	}
+
+	switch u.Scheme {
+	case "ssh":
+		return endpointFromSshUrl(u)
+	case "http", "https":
+		return endpointFromHttpUrl(u)
+	case "git":
+		return endpointFromGitUrl(u, c)
+	case "":
+		return endpointFromBareSshUrl(u.String())
+	default:
+		// Just passthrough to preserve
+		return Endpoint{Url: rawurl}
+	}
+}
+
+>>>>>>> refs/remotes/git-lfs/1.5/filepathfilter:config/endpoint.go
 // endpointFromBareSshUrl constructs a new endpoint from a bare SSH URL:
 //
 //   user@host.com:path/to/repo.git

@@ -36,7 +36,10 @@ $distro_name_map = {
     fedora/22
     fedora/23
     fedora/24
+<<<<<<< HEAD
     fedora/25
+=======
+>>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
   ),
   "debian/7" => %w(
     debian/wheezy

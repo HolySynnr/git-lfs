@@ -13,7 +13,12 @@ import (
 
 	"github.com/git-lfs/git-lfs/errors"
 	"github.com/git-lfs/git-lfs/progress"
+<<<<<<< HEAD
 	"github.com/git-lfs/git-lfs/tq"
+=======
+	"github.com/git-lfs/git-lfs/tools/longpathos"
+	"github.com/git-lfs/git-lfs/transfer"
+>>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
 )
 
 var (
@@ -89,14 +94,14 @@ func EncodePointer(writer io.Writer, pointer *Pointer) (int, error) {
 
 func DecodePointerFromFile(file string) (*Pointer, error) {
 	// Check size before reading
-	stat, err := os.Stat(file)
+	stat, err := longpathos.Stat(file)
 	if err != nil {
 		return nil, err
 	}
 	if stat.Size() > blobSizeCutoff {
 		return nil, errors.NewNotAPointerError(errors.New("file size exceeds lfs pointer size cutoff"))
 	}
-	f, err := os.OpenFile(file, os.O_RDONLY, 0644)
+	f, err := longpathos.OpenFile(file, os.O_RDONLY, 0644)
 	if err != nil {
 		return nil, err
 	}
