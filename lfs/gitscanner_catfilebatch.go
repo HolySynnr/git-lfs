@@ -89,6 +89,7 @@ func (s *catFileBatchScanner) Scan() bool {
 	return true
 }
 
+<<<<<<< HEAD
 func (s *catFileBatchScanner) next() (*WrappedPointer, error) {
 	l, err := s.r.ReadBytes('\n')
 	if err != nil {
@@ -108,6 +109,15 @@ func (s *catFileBatchScanner) next() (*WrappedPointer, error) {
 	if err != nil {
 		return nil, err
 	}
+=======
+		// Line is formatted:
+		// <sha1> <type> <size>
+		fields := bytes.Fields(l)
+		if len(fields) < 3 {
+			panic("Bad fields??? " + string(l))
+		}
+		s, _ := strconv.Atoi(string(fields[2]))
+>>>>>>> refs/remotes/git-lfs/catfilebatch-wtf
 
 <<<<<<< HEAD
 	if size != read {
