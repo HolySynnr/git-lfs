@@ -99,12 +99,20 @@ func filterCommand(cmd *cobra.Command, args []string) {
 		s.WriteStatus(status)
 	}
 
+<<<<<<< HEAD
 	if len(malformed) > 0 {
 		fmt.Fprintf(os.Stderr, "Encountered %d file(s) that should have been pointers, but weren't:\n", len(malformed))
 		for _, m := range malformed {
 			fmt.Fprintf(os.Stderr, "\t%s\n", m)
 		}
 	}
+=======
+	// TODO: Detect an EOF after a successful filter-process request (EOF at
+	// any other point in the protocol would be an error) and wait for
+	// downloaded files to finish. Afterwards copy all downloaded files to
+	// their final location in the work tree.
+	lfs.WaitForDownloads(TransferManifest())
+>>>>>>> refs/remotes/git-lfs/promised-downloads
 
 	if err := s.Err(); err != nil && err != io.EOF {
 		ExitWithError(err)

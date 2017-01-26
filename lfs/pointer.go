@@ -65,7 +65,15 @@ func NewPointerExtension(name string, priority int, oid string) *PointerExtensio
 	return &PointerExtension{name, priority, oid, oidType}
 }
 
+<<<<<<< HEAD
 func (p *Pointer) Smudge(writer io.Writer, workingfile string, download bool, manifest *tq.Manifest, cb progress.CopyCallback) error {
+=======
+func WaitForDownloads(manifest *transfer.Manifest) {
+	PointerWaitForDownloads(manifest)
+}
+
+func (p *Pointer) Smudge(writer io.Writer, workingfile string, download bool, manifest *transfer.Manifest, cb progress.CopyCallback) error {
+>>>>>>> refs/remotes/git-lfs/promised-downloads
 	return PointerSmudge(writer, p, workingfile, download, manifest, cb)
 }
 
