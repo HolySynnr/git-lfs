@@ -6,10 +6,14 @@ import (
 	"path/filepath"
 	"strings"
 
+<<<<<<< HEAD
 	"github.com/git-lfs/git-lfs/filepathfilter"
 	"github.com/git-lfs/git-lfs/localstorage"
 	"github.com/git-lfs/git-lfs/subprocess"
 	"github.com/git-lfs/git-lfs/tools/longpathos"
+=======
+	"github.com/github/git-lfs/subprocess"
+>>>>>>> refs/remotes/git-lfs/register-commands-v2
 
 	"github.com/git-lfs/git-lfs/git"
 	"github.com/git-lfs/git-lfs/tools"
@@ -59,7 +63,7 @@ func cloneCommand(cmd *cobra.Command, args []string) {
 	defer longpathos.Chdir(cwd)
 
 	// Also need to derive dirs now
-	localstorage.ResolveDirs()
+	commandPreRun(nil, nil)
 	requireInRepo()
 
 	// Now just call pull with default args

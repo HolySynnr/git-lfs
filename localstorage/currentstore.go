@@ -1,17 +1,21 @@
 package localstorage
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 
+<<<<<<< HEAD
 	"github.com/git-lfs/git-lfs/config"
 	"github.com/git-lfs/git-lfs/errors"
 <<<<<<< HEAD
 =======
 	"github.com/git-lfs/git-lfs/tools/longpathos"
 >>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
+=======
+	"github.com/github/git-lfs/config"
+	"github.com/github/git-lfs/errors"
+>>>>>>> refs/remotes/git-lfs/register-commands-v2
 )
 
 const (
@@ -31,11 +35,16 @@ func Objects() *LocalStorage {
 	return objects
 }
 
+<<<<<<< HEAD
 func InitStorage() error {
 	if len(config.LocalGitStorageDir) == 0 || len(config.LocalGitDir) == 0 {
 		return notInRepoErr
 	}
 
+=======
+func ResolveDirs() error {
+	config.ResolveGitBasicDirs()
+>>>>>>> refs/remotes/git-lfs/register-commands-v2
 	TempDir = filepath.Join(config.LocalGitDir, "lfs", "tmp") // temp files per worktree
 	objs, err := NewStorage(
 		filepath.Join(config.LocalGitStorageDir, "lfs", "objects"),
@@ -43,13 +52,18 @@ func InitStorage() error {
 	)
 
 	if err != nil {
+<<<<<<< HEAD
 		return errors.Wrap(err, "init LocalStorage")
+=======
+		return errors.Wrap(err, "localstorage")
+>>>>>>> refs/remotes/git-lfs/register-commands-v2
 	}
 
 	objects = objs
 	config.LocalLogDir = filepath.Join(objs.RootDir, "logs")
 <<<<<<< HEAD
 	if err := os.MkdirAll(config.LocalLogDir, localLogDirPerms); err != nil {
+<<<<<<< HEAD
 =======
 	if err := longpathos.MkdirAll(config.LocalLogDir, localLogDirPerms); err != nil {
 >>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
@@ -67,7 +81,11 @@ func InitStorageOrFail() {
 
 		fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
 		os.Exit(1)
+=======
+		return errors.Wrap(err, "localstorage")
+>>>>>>> refs/remotes/git-lfs/register-commands-v2
 	}
+	return nil
 }
 
 func ResolveDirs() {

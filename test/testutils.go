@@ -84,7 +84,9 @@ func (r *Repo) Pushd() {
 		r.callback.Fatalf("Can't chdir %v", err)
 	}
 	r.popDir = oldwd
-	localstorage.ResolveDirs()
+	if err := localstorage.ResolveDirs(); err != nil {
+		r.callback.Fatalf("init error: %v", err)
+	}
 }
 
 func (r *Repo) Popd() {
@@ -352,7 +354,55 @@ func (repo *Repo) AddCommits(inputs []*CommitInput) []*CommitOutput {
 		}
 		// Any files to write?
 		for _, infile := range input.Files {
+<<<<<<< HEAD
 			infile.AddToIndex(output, repo)
+=======
+			inputData := infile.DataReader
+			if inputData == nil && infile.Data != "" {
+				inputData = strings.NewReader(infile.Data)
+			}
+			if inputData == nil {
+				// Different data for each file but deterministic
+				inputData = NewPlaceholderDataReader(seedSequence.Int63(), infile.Size)
+			}
+			cleaned, err := lfs.PointerClean(inputData, infile.Filename, infile.Size, nil)
+			if err != nil {
+				repo.callback.Errorf("Error creating pointer file: %v", err)
+				continue
+			}
+			// this only created the temp file, move to final location
+			tmpfile := cleaned.Filename
+			storageOnce.Do(func() { localstorage.ResolveDirs() })
+			mediafile, err := lfs.LocalMediaPath(cleaned.Oid)
+			if err != nil {
+				repo.callback.Errorf("Unable to get local media path: %v", err)
+				continue
+			}
+			if _, err := os.Stat(mediafile); err != nil {
+				if err := os.Rename(tmpfile, mediafile); err != nil {
+					repo.callback.Errorf("Unable to move %s to %s: %v", tmpfile, mediafile, err)
+					continue
+				}
+			}
+
+			output.Files = append(output.Files, cleaned.Pointer)
+			// Write pointer to local filename for adding (not using clean filter)
+			os.MkdirAll(filepath.Dir(infile.Filename), 0755)
+			f, err := os.Create(infile.Filename)
+			if err != nil {
+				repo.callback.Errorf("Error creating pointer file: %v", err)
+				continue
+			}
+			_, err = cleaned.Pointer.Encode(f)
+			if err != nil {
+				f.Close()
+				repo.callback.Errorf("Error encoding pointer file: %v", err)
+				continue
+			}
+			f.Close() // early close in a loop, don't defer
+			RunGitCommand(repo.callback, true, "add", infile.Filename)
+
+>>>>>>> refs/remotes/git-lfs/register-commands-v2
 		}
 		// Now commit
 		err = commitAtDate(input.CommitDate, input.CommitterName, input.CommitterEmail,
