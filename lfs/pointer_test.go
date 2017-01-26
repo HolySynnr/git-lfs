@@ -3,7 +3,10 @@ package lfs
 import (
 	"bufio"
 	"bytes"
+<<<<<<< HEAD
 	"io/ioutil"
+=======
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 	"reflect"
 	"strings"
 	"testing"
@@ -169,6 +172,7 @@ size 12345`
 }
 
 func TestDecodeFromEmptyReader(t *testing.T) {
+<<<<<<< HEAD
 	p, buf, err := DecodeFrom(strings.NewReader(""))
 	by, rerr := ioutil.ReadAll(buf)
 
@@ -176,6 +180,13 @@ func TestDecodeFromEmptyReader(t *testing.T) {
 	assert.EqualError(t, err, "Pointer file error: invalid header")
 	assert.Nil(t, p)
 	assert.Empty(t, by)
+=======
+	by, p, err := DecodeFrom(strings.NewReader(""))
+
+	assert.EqualError(t, err, "Pointer file error: invalid header")
+	assert.Nil(t, p)
+	assert.Empty(t, string(by))
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 }
 
 func TestDecodeInvalid(t *testing.T) {

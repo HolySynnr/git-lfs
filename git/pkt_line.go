@@ -56,7 +56,10 @@ func (p *pktline) readPacket() ([]byte, error) {
 		return nil, err
 	}
 
+<<<<<<< HEAD
 	// pktLen==0: flush packet
+=======
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 	if pktLen == 0 {
 		return nil, nil
 	}
@@ -68,17 +71,23 @@ func (p *pktline) readPacket() ([]byte, error) {
 	return payload, err
 }
 
+<<<<<<< HEAD
 // readPacketText follows identical semantics to the `readPacket()` function,
 // but additionally removes the trailing `\n` LF from the end of the packet, if
 // present.
+=======
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 func (p *pktline) readPacketText() (string, error) {
 	data, err := p.readPacket()
 	return strings.TrimSuffix(string(data), "\n"), err
 }
 
+<<<<<<< HEAD
 // readPacketList reads as many packets as possible using the `readPacketText`
 // function before encountering a flush packet. It returns a slice of all the
 // packets it read, or an error if one was encountered.
+=======
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 func (p *pktline) readPacketList() ([]string, error) {
 	var list []string
 	for {
@@ -97,6 +106,7 @@ func (p *pktline) readPacketList() ([]string, error) {
 	return list, nil
 }
 
+<<<<<<< HEAD
 // writePacket writes the given data in "data" to the underlying data stream
 // using Git's `pkt-line` format.
 //
@@ -106,6 +116,8 @@ func (p *pktline) readPacketList() ([]string, error) {
 //
 // NB: writePacket does _not_ flush the underlying buffered writer. See instead:
 // `writeFlush()`.
+=======
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 func (p *pktline) writePacket(data []byte) error {
 	if len(data) > MaxPacketLength {
 		return errors.New("Packet length exceeds maximal length")
@@ -119,6 +131,7 @@ func (p *pktline) writePacket(data []byte) error {
 		return err
 	}
 
+<<<<<<< HEAD
 	return nil
 }
 
@@ -126,6 +139,15 @@ func (p *pktline) writePacket(data []byte) error {
 // underlying buffered writer.
 //
 // If any error was encountered along the way, it will be returned immediately
+=======
+	if err := p.w.Flush(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 func (p *pktline) writeFlush() error {
 	if _, err := p.w.WriteString(fmt.Sprintf("%04x", 0)); err != nil {
 		return err
@@ -138,16 +160,22 @@ func (p *pktline) writeFlush() error {
 	return nil
 }
 
+<<<<<<< HEAD
 // writePacketText follows the same semantics as `writePacket`, but appends a
 // trailing "\n" LF character to the end of the data.
+=======
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 func (p *pktline) writePacketText(data string) error {
 	return p.writePacket([]byte(data + "\n"))
 }
 
+<<<<<<< HEAD
 // writePacketList writes a slice of strings using the semantics of
 // and then writes a terminating flush sequence afterwords.
 //
 // If any error was encountered, it will be returned immediately.
+=======
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 func (p *pktline) writePacketList(list []string) error {
 	for _, i := range list {
 		if err := p.writePacketText(i); err != nil {

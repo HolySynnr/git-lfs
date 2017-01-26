@@ -16,7 +16,17 @@ import (
 )
 
 var (
+<<<<<<< HEAD
 	// smudgeSkip is a command-line flag belonging to the "git-lfs smudge"
+=======
+	// smudgeInfo is a command-line flag belonging to the "git-lfs smudge"
+	// command specifying whether to skip the smudge process and simply
+	// print out the info of the files being smudged.
+	//
+	// As of v1.5.0, it is deprecated.
+	smudgeInfo = false
+	// smudgeInfo is a command-line flag belonging to the "git-lfs smudge"
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 	// command specifying whether to skip the smudge process.
 	smudgeSkip = false
 )
@@ -31,8 +41,51 @@ var (
 // Any errors encountered along the way will be returned immediately if they
 // were non-fatal, otherwise execution will halt and the process will be
 // terminated by using the `commands.Panic()` func.
+<<<<<<< HEAD
 func smudge(to io.Writer, from io.Reader, filename string, skip bool, filter *filepathfilter.Filter) error {
 	ptr, pbuf, perr := lfs.DecodeFrom(from)
+=======
+func smudge(to io.Writer, ptr *lfs.Pointer, filename string, skip bool) error {
+	cb, file, err := lfs.CopyCallbackFile("smudge", filename, 1, 1)
+	if err != nil {
+		return err
+	}
+
+	download := tools.FilenamePassesIncludeExcludeFilter(filename, cfg.FetchIncludePaths(), cfg.FetchExcludePaths())
+
+	if skip || cfg.Os.Bool("GIT_LFS_SKIP_SMUDGE", false) {
+		download = false
+	}
+
+	err = ptr.Smudge(to, filename, download, TransferManifest(), cb)
+	if file != nil {
+		file.Close()
+	}
+
+	if err != nil {
+		ptr.Encode(to)
+		// Download declined error is ok to skip if we weren't requesting download
+		if !(errors.IsDownloadDeclinedError(err) && !download) {
+			LoggedError(err, "Error downloading object: %s (%s)", filename, ptr.Oid)
+			if !cfg.SkipDownloadErrors() {
+				os.Exit(2)
+			}
+		}
+	}
+
+	return nil
+}
+
+func smudgeCommand(cmd *cobra.Command, args []string) {
+	requireStdin("This command should be run by the Git 'smudge' filter")
+	lfs.InstallHooks(false)
+
+	// keeps the initial buffer from lfs.DecodePointer
+	b := &bytes.Buffer{}
+	r := io.TeeReader(os.Stdin, b)
+
+	ptr, perr := lfs.DecodePointer(r)
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 	if perr != nil {
 		if _, err := io.Copy(to, pbuf); err != nil {
 			return errors.Wrap(err, perr.Error())
@@ -61,12 +114,17 @@ func smudge(to io.Writer, from io.Reader, filename string, skip bool, filter *fi
 			Exit(err.Error())
 		}
 
+<<<<<<< HEAD
 		if stat, err := longpathos.Stat(localPath); err != nil {
+=======
+		if stat, err := os.Stat(localPath); err != nil {
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 			Print("%d --", ptr.Size)
 		} else {
 			Print("%d %s", stat.Size(), localPath)
 		}
 
+<<<<<<< HEAD
 		return nil
 	}
 
@@ -108,6 +166,14 @@ func smudge(to io.Writer, from io.Reader, filename string, skip bool, filter *fi
 	}
 
 	return nil
+=======
+		return
+	}
+
+	if err := smudge(os.Stdout, ptr, smudgeFilename(args, perr), smudgeSkip); err != nil {
+		Error(err.Error())
+	}
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 }
 
 func smudgeCommand(cmd *cobra.Command, args []string) {

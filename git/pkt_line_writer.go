@@ -3,7 +3,11 @@ package git
 import (
 	"io"
 
+<<<<<<< HEAD
 	"github.com/git-lfs/git-lfs/tools"
+=======
+	"github.com/github/git-lfs/tools"
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 )
 
 // PktlineWriter is an implementation of `io.Writer` which writes data buffers
@@ -44,8 +48,15 @@ func NewPktlineWriter(w io.Writer, c int) *PktlineWriter {
 // underlying stream of data, and the process repeats.
 //
 // When the caller has no more data to write in the given chunk of packets, a
+<<<<<<< HEAD
 // subsequent call to `Flush()` SHOULD be made in order to signify that the
 // current pkt sequence has terminated, and a new one can begin.
+=======
+// subsequent call to `Write(p []byte)` MUST be made with a nil slice, to flush
+// the remaining data in the buffer, and write the terminating bytes to the
+// underlying packet stream. Alternatively, the caller can use the public
+// `Flush() error` func to preform the same operation.
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 //
 // Write returns the number of bytes in "p" accepted into the writer, which
 // _MAY_ be written to the underlying protocol stream, or may be written into
@@ -57,6 +68,7 @@ func NewPktlineWriter(w io.Writer, c int) *PktlineWriter {
 func (w *PktlineWriter) Write(p []byte) (int, error) {
 	var n int
 
+<<<<<<< HEAD
 	for len(p[n:]) > 0 {
 		// While there is still data left to process in "p", grab as
 		// much of it as we can while not allowing the internal buffer
@@ -68,6 +80,28 @@ func (w *PktlineWriter) Write(p []byte) (int, error) {
 		w.buf = append(w.buf, p[n:n+m]...)
 
 		n += m
+=======
+	if p == nil {
+		if err := w.Flush(); err != nil {
+			return 0, err
+		}
+	}
+
+	for len(p) > 0 {
+		// While there is still data left to process in "p", grab as
+		// much of it as we can while not allowing the internal buffer
+		// to exceed the MaxPacketLength const.
+		m := tools.MinInt(len(p), MaxPacketLength-len(w.buf))
+
+		// Append on all of the data that we could into the internal
+		// buffer.
+		w.buf = append(w.buf, p[:m]...)
+		// Truncate "p" such that it no longer includes the data that we
+		// have in the internal buffer.
+		p = p[m:]
+
+		n = n + m
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 
 		if len(w.buf) == MaxPacketLength {
 			// If we were able to grab an entire packet's worth of

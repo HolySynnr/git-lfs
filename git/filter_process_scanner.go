@@ -6,9 +6,14 @@ import (
 	"fmt"
 	"io"
 	"strings"
+<<<<<<< HEAD
 	"sync"
 
 	"github.com/git-lfs/git-lfs/errors"
+=======
+
+	"github.com/github/git-lfs/errors"
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 	"github.com/rubyist/tracerx"
 )
 
@@ -32,12 +37,15 @@ type FilterProcessScanner struct {
 	// forth between Git.
 	pl *pktline
 
+<<<<<<< HEAD
 	// lmu guards lastStatus
 	lmu sync.Mutex
 	// lastStatus is the last status that was sent using the WriteStatus()
 	// method
 	lastStatus string
 
+=======
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 	// req is a temporary variable used to hold the value accessible by the
 	// `Request()` function. It is cleared at the beginning of each `Scan()`
 	// invocation, and written to at the end of each `Scan()` invocation.
@@ -67,27 +75,46 @@ func NewFilterProcessScanner(r io.Reader, w io.Writer) *FilterProcessScanner {
 // client respectively.
 //
 // If either side wrote an invalid sequence of data, or did not meet
+<<<<<<< HEAD
 // expectations, an error will be returned. If the filter type is not supported,
+=======
+// expectations, an error will be returned. If The filter type is not supported,
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 // an error will be returned. If the pkt-line welcome message was invalid, an
 // error will be returned.
 //
 // If there was an error reading or writing any of the packets below, an error
 // will be returned.
 func (o *FilterProcessScanner) Init() error {
+<<<<<<< HEAD
 	tracerx.Printf("Initialize filter-process")
+=======
+	tracerx.Printf("Initialize filter")
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 	reqVer := "version=2"
 
 	initMsg, err := o.pl.readPacketText()
 	if err != nil {
+<<<<<<< HEAD
 		return errors.Wrap(err, "reading filter-process initialization")
 	}
 	if initMsg != "git-filter-client" {
 		return fmt.Errorf("invalid filter-process pkt-line welcome message: %s", initMsg)
+=======
+		return errors.Wrap(err, "reading filter initialization")
+	}
+	if initMsg != "git-filter-client" {
+		return fmt.Errorf("invalid filter pkt-line welcome message: %s", initMsg)
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 	}
 
 	supVers, err := o.pl.readPacketList()
 	if err != nil {
+<<<<<<< HEAD
 		return errors.Wrap(err, "reading filter-process versions")
+=======
+		return errors.Wrap(err, "reading filter versions")
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 	}
 	if !isStringInSlice(supVers, reqVer) {
 		return fmt.Errorf("filter '%s' not supported (your Git supports: %s)", reqVer, supVers)
@@ -95,7 +122,11 @@ func (o *FilterProcessScanner) Init() error {
 
 	err = o.pl.writePacketList([]string{"git-filter-server", reqVer})
 	if err != nil {
+<<<<<<< HEAD
 		return errors.Wrap(err, "writing filter-process initialization failed")
+=======
+		return errors.Wrap(err, "writing filter initialization failed")
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 	}
 	return nil
 }
@@ -110,7 +141,11 @@ func (o *FilterProcessScanner) NegotiateCapabilities() error {
 
 	supCaps, err := o.pl.readPacketList()
 	if err != nil {
+<<<<<<< HEAD
 		return fmt.Errorf("reading filter-process capabilities failed with %s", err)
+=======
+		return fmt.Errorf("reading filter capabilities failed with %s", err)
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 	}
 	for _, reqCap := range reqCaps {
 		if !isStringInSlice(supCaps, reqCap) {
@@ -120,7 +155,11 @@ func (o *FilterProcessScanner) NegotiateCapabilities() error {
 
 	err = o.pl.writePacketList(reqCaps)
 	if err != nil {
+<<<<<<< HEAD
 		return fmt.Errorf("writing filter-process capabilities failed with %s", err)
+=======
+		return fmt.Errorf("writing filter capabilities failed with %s", err)
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 	}
 
 	return nil
@@ -141,9 +180,12 @@ type Request struct {
 // failed, there was either an error reading the next request (and the results
 // of calling `Err()` should be inspected), or the pipe was closed and no more
 // requests are present.
+<<<<<<< HEAD
 //
 // Closing the pipe is Git's way to communicate that no more files will be
 // filtered. Git expects that the LFS process exits after this event.
+=======
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 func (o *FilterProcessScanner) Scan() bool {
 	o.req, o.err = nil, nil
 
@@ -171,7 +213,11 @@ func (o *FilterProcessScanner) Err() error { return o.err }
 // will read the body of the request. Since the body is _not_ offset, one
 // request should be read in its entirety before consuming the next request.
 func (o *FilterProcessScanner) readRequest() (*Request, error) {
+<<<<<<< HEAD
 	tracerx.Printf("Read filter-process request.")
+=======
+	tracerx.Printf("Read filter protocol request.")
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 
 	requestList, err := o.pl.readPacketList()
 	if err != nil {
@@ -184,13 +230,18 @@ func (o *FilterProcessScanner) readRequest() (*Request, error) {
 	}
 
 	for _, pair := range requestList {
+<<<<<<< HEAD
 		v := strings.SplitN(pair, "=", 2)
+=======
+		v := strings.Split(pair, "=")
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 		req.Header[v[0]] = v[1]
 	}
 
 	return req, nil
 }
 
+<<<<<<< HEAD
 func (o *FilterProcessScanner) ForgetStatus() {
 	o.lastStatus = ""
 }
@@ -203,6 +254,9 @@ func (o *FilterProcessScanner) WriteStatus(status string) error {
 	}
 
 	o.lastStatus = status
+=======
+func (o *FilterProcessScanner) WriteStatus(status string) error {
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 	return o.pl.writePacketList([]string{"status=" + status})
 }
 

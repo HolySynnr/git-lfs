@@ -19,13 +19,21 @@ import (
 //
 // If the object read from "from" is _already_ a clean pointer, then it will be
 // written out verbatim to "to", without trying to make it a pointer again.
+<<<<<<< HEAD
 func clean(to io.Writer, from io.Reader, fileName string) error {
+=======
+func clean(from io.Reader, to io.Writer, fileName string) error {
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 	var cb progress.CopyCallback
 	var file *os.File
 	var fileSize int64
 
 	if len(fileName) > 0 {
+<<<<<<< HEAD
 		stat, err := longpathos.Stat(fileName)
+=======
+		stat, err := os.Stat(fileName)
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 		if err == nil && stat != nil {
 			fileSize = stat.Size()
 
@@ -93,7 +101,11 @@ func cleanCommand(cmd *cobra.Command, args []string) {
 		fileName = args[0]
 	}
 
+<<<<<<< HEAD
 	if err := clean(os.Stdout, os.Stdin, fileName); err != nil {
+=======
+	if err := clean(os.Stdin, os.Stdout, fileName); err != nil {
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 		Error(err.Error())
 	}
 }

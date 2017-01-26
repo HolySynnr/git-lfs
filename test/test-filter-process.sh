@@ -6,7 +6,19 @@
 # from the "next" branch, which is the only (current) version of Git that has
 # support for the filter protocol.
 #
+<<<<<<< HEAD
 ensure_git_version_isnt $VERSION_LOWER "2.11.0"
+=======
+# Once 2.11 is released, replace this with:
+#
+# ```
+# ensure_git_version_isnt $VERSION_LOWER "2.11.0"
+# ```
+if [ "1" -ne "$(git version | cut -d ' ' -f 3 | grep -c "g")" ]; then
+  echo "skip: $0 git version does not include support for filter protocol"
+  exit
+fi
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 
 begin_test "filter process: checking out a branch"
 (
@@ -39,12 +51,19 @@ begin_test "filter process: checking out a branch"
   git push origin --all
 
   pushd ..
+<<<<<<< HEAD
     # Git will choose filter.lfs.process over `filter.lfs.clean` and
     # `filter.lfs.smudge`
     git \
       -c "filter.lfs.process=git-lfs filter-process" \
       -c "filter.lfs.clean=false"\
       -c "filter.lfs.smudge=false" \
+=======
+    git \
+      -c "filter.lfs.process=git-lfs filter-process" \
+      -c "filter.lfs.clean="\
+      -c "filter.lfs.smudge=" \
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
       -c "filter.lfs.required=true" \
       clone "$GITSERVER/$reponame" "$reponame-assert"
 
@@ -89,6 +108,7 @@ begin_test "filter process: adding a file"
   diff -u <(echo "$expected") <(echo "$got")
 )
 end_test
+<<<<<<< HEAD
 
 # https://github.com/git-lfs/git-lfs/issues/1697
 begin_test "filter process: add a file with 1024 bytes"
@@ -107,3 +127,5 @@ end_test
 
 
 
+=======
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased

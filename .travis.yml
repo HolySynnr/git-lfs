@@ -26,6 +26,23 @@ matrix:
           make --jobs=2;
           make install;
           cd ..;
+<<<<<<< HEAD
+=======
+    - env: git-latest-master-from-source
+      os: osx
+      before_script:
+        - >
+          export NO_OPENSSL=YesPlease;
+          export APPLE_COMMON_CRYPTO=YesPlease;
+          brew install gettext;
+          brew link --force gettext;
+          git clone $GIT_SOURCE_REPO git-source;
+          cd git-source;
+          git checkout $GIT_LATEST_SOURCE_BRANCH;
+          make --jobs=2;
+          make install;
+          cd ..;
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
     - env: git-earliest-supported-version-from-source
       os: linux
       before_script:
@@ -33,6 +50,23 @@ matrix:
           git clone $GIT_SOURCE_REPO git-source;
           cd git-source;
           git checkout $GIT_EARLIEST_SUPPORTED_VERSION;
+<<<<<<< HEAD
+=======
+          make --jobs=2;
+          make install;
+          cd ..;
+    - env: git-earliest-supported-version-from-source
+      os: osx
+      before_script:
+        - >
+          export NO_OPENSSL=YesPlease;
+          export APPLE_COMMON_CRYPTO=YesPlease;
+          brew install gettext;
+          brew link --force gettext;
+          git clone $GIT_SOURCE_REPO git-source;
+          cd git-source;
+          git checkout $GIT_EARLIEST_SUPPORTED_VERSION;
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
           make --jobs=2;
           make install;
           cd ..;

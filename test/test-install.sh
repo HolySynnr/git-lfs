@@ -12,7 +12,11 @@ begin_test "install again"
 
   printf "$smudge" | grep "git-lfs smudge"
   printf "$clean" | grep "git-lfs clean"
+<<<<<<< HEAD
   printf "$filter" | grep "git-lfs filter-process"
+=======
+  printf "$filter" | grep "git-lfs filter"
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 
   git lfs install
 
@@ -213,8 +217,11 @@ begin_test "install --skip-smudge"
   [ "git-lfs clean -- %f" = "$(git config --global filter.lfs.clean)" ]
   [ "git-lfs smudge -- %f" = "$(git config --global filter.lfs.smudge)" ]
   [ "git-lfs filter-process" = "$(git config --global filter.lfs.process)" ]
+<<<<<<< HEAD
 
   [ ! -e "lfs" ]
+=======
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 )
 end_test
 

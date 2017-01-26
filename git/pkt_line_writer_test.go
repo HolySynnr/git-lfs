@@ -57,6 +57,7 @@ func TestPktlineWriterWritesMultiplePacketsGreaterThanMaxPacketLength(t *testing
 	var buf bytes.Buffer
 
 	b1 := make([]byte, MaxPacketLength*3/4)
+<<<<<<< HEAD
 	for i, _ := range b1 {
 		b1[i] = 1
 	}
@@ -69,6 +70,24 @@ func TestPktlineWriterWritesMultiplePacketsGreaterThanMaxPacketLength(t *testing
 	w := NewPktlineWriter(&buf, 0)
 	assertWriterWrite(t, w, b1, len(b1))
 	assertWriterWrite(t, w, b2, len(b2))
+=======
+	p1 := make([]byte, len(b1))
+	for i, _ := range b1 {
+		b1[i] = 1
+	}
+	copy(p1, b1)
+
+	b2 := make([]byte, MaxPacketLength*3/4)
+	p2 := make([]byte, len(b2))
+	for i, _ := range b2 {
+		b2[i] = 1
+	}
+	copy(p2, b1)
+
+	w := NewPktlineWriter(&buf, 0)
+	assertWriterWrite(t, w, p1, len(p1))
+	assertWriterWrite(t, w, p2, len(p2))
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 	assertWriterWrite(t, w, nil, 0)
 
 	// offs is how far into b2 we needed to buffer before writing an entire

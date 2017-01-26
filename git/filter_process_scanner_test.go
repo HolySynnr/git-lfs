@@ -35,13 +35,20 @@ func TestFilterProcessScannerRejectsUnrecognizedInitializationMessages(t *testin
 
 	pl := newPktline(nil, &from)
 	require.Nil(t, pl.writePacketText("git-filter-client-unknown"))
+<<<<<<< HEAD
 	require.Nil(t, pl.writeFlush())
+=======
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 
 	fps := NewFilterProcessScanner(&from, &to)
 	err := fps.Init()
 
 	require.NotNil(t, err)
+<<<<<<< HEAD
 	assert.Equal(t, "invalid filter-process pkt-line welcome message: git-filter-client-unknown", err.Error())
+=======
+	assert.Equal(t, "invalid filter pkt-line welcome message: git-filter-client-unknown", err.Error())
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 	assert.Empty(t, to.Bytes())
 }
 
@@ -102,19 +109,31 @@ func TestFilterProcessScannerReadsRequestHeadersAndPayload(t *testing.T) {
 	pl := newPktline(nil, &from)
 	// Headers
 	require.Nil(t, pl.writePacketList([]string{
+<<<<<<< HEAD
 		"foo=bar", "other=woot", "crazy='sq',\\$x=.bin",
+=======
+		"foo=bar", "other=woot",
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 	}))
 	// Multi-line packet
 	require.Nil(t, pl.writePacketText("first"))
 	require.Nil(t, pl.writePacketText("second"))
+<<<<<<< HEAD
 	require.Nil(t, pl.writeFlush())
+=======
+	_, err := from.Write([]byte{0x30, 0x30, 0x30, 0x30}) // flush packet
+	assert.Nil(t, err)
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 
 	req, err := readRequest(NewFilterProcessScanner(&from, &to))
 
 	assert.Nil(t, err)
 	assert.Equal(t, req.Header["foo"], "bar")
 	assert.Equal(t, req.Header["other"], "woot")
+<<<<<<< HEAD
 	assert.Equal(t, req.Header["crazy"], "'sq',\\$x=.bin")
+=======
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 
 	payload, err := ioutil.ReadAll(req.Payload)
 	assert.Nil(t, err)
@@ -122,11 +141,21 @@ func TestFilterProcessScannerReadsRequestHeadersAndPayload(t *testing.T) {
 }
 
 func TestFilterProcessScannerRejectsInvalidHeaderPackets(t *testing.T) {
+<<<<<<< HEAD
 	from := bytes.NewBuffer([]byte{
 		0x30, 0x30, 0x30, 0x34, // 0004 (invalid packet length)
 	})
 
 	req, err := readRequest(NewFilterProcessScanner(from, nil))
+=======
+	var from bytes.Buffer
+
+	pl := newPktline(nil, &from)
+	// (Invalid) headers
+	require.Nil(t, pl.writePacket([]byte{}))
+
+	req, err := readRequest(NewFilterProcessScanner(&from, nil))
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 
 	require.NotNil(t, err)
 	assert.Equal(t, "Invalid packet length.", err.Error())
@@ -134,6 +163,7 @@ func TestFilterProcessScannerRejectsInvalidHeaderPackets(t *testing.T) {
 	assert.Nil(t, req)
 }
 
+<<<<<<< HEAD
 func TestFilterProcessScannerWritesStatusPackets(t *testing.T) {
 	var buf bytes.Buffer
 
@@ -173,6 +203,9 @@ func TestFilterProcessScannerAbbreviatesUnchangedStatuses(t *testing.T) {
 }
 
 // readRequest performs a single scan operation on the given
+=======
+// readRequest preforms a single scan operation on the given
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 // `*FilterProcessScanner`, "s", and returns: an error if there was one, or a
 // request if there was one.  If neither, it returns (nil, nil).
 func readRequest(s *FilterProcessScanner) (*Request, error) {

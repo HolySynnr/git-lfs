@@ -2,11 +2,16 @@ package git
 
 import (
 	"bytes"
+<<<<<<< HEAD
+=======
+	"fmt"
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 	"io"
 	"io/ioutil"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+<<<<<<< HEAD
 	"github.com/stretchr/testify/require"
 )
 
@@ -19,12 +24,28 @@ func writePacket(t *testing.T, w io.Writer, datas ...[]byte) {
 	}
 
 	require.Nil(t, pl.writeFlush())
+=======
+)
+
+// writePackets
+func writePacket(w io.Writer, datas ...[]byte) {
+	for _, data := range datas {
+		io.WriteString(w, fmt.Sprintf("%04x", len(data)+4))
+		w.Write(data)
+
+	}
+	io.WriteString(w, fmt.Sprintf("%04x", 0))
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 }
 
 func TestPktlineReaderReadsSinglePacketsInOneCall(t *testing.T) {
 	var buf bytes.Buffer
 
+<<<<<<< HEAD
 	writePacket(t, &buf, []byte("asdf"))
+=======
+	writePacket(&buf, []byte("asdf"))
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 
 	pr := &pktlineReader{pl: newPktline(&buf, nil)}
 
@@ -37,7 +58,11 @@ func TestPktlineReaderReadsSinglePacketsInOneCall(t *testing.T) {
 func TestPktlineReaderReadsManyPacketsInOneCall(t *testing.T) {
 	var buf bytes.Buffer
 
+<<<<<<< HEAD
 	writePacket(t, &buf, []byte("first\n"), []byte("second"))
+=======
+	writePacket(&buf, []byte("first\n"), []byte("second"))
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 
 	pr := &pktlineReader{pl: newPktline(&buf, nil)}
 
@@ -50,7 +75,11 @@ func TestPktlineReaderReadsManyPacketsInOneCall(t *testing.T) {
 func TestPktlineReaderReadsSinglePacketsInMultipleCallsWithUnevenBuffering(t *testing.T) {
 	var buf bytes.Buffer
 
+<<<<<<< HEAD
 	writePacket(t, &buf, []byte("asdf"))
+=======
+	writePacket(&buf, []byte("asdf"))
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 
 	pr := &pktlineReader{pl: newPktline(&buf, nil)}
 
@@ -71,7 +100,11 @@ func TestPktlineReaderReadsSinglePacketsInMultipleCallsWithUnevenBuffering(t *te
 func TestPktlineReaderReadsManyPacketsInMultipleCallsWithUnevenBuffering(t *testing.T) {
 	var buf bytes.Buffer
 
+<<<<<<< HEAD
 	writePacket(t, &buf, []byte("first"), []byte("second"))
+=======
+	writePacket(&buf, []byte("first"), []byte("second"))
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 
 	pr := &pktlineReader{pl: newPktline(&buf, nil)}
 
@@ -87,7 +120,11 @@ func TestPktlineReaderReadsManyPacketsInMultipleCallsWithUnevenBuffering(t *test
 	n2, e2 := pr.Read(p2[:])
 	assert.Equal(t, 7, n2)
 	assert.Equal(t, []byte("tsecond"), p2[:])
+<<<<<<< HEAD
 	assert.Equal(t, io.EOF, e2)
+=======
+	assert.Equal(t, nil, e2)
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 
 	n3, e3 := pr.Read(p3[:])
 	assert.Equal(t, 0, n3)
@@ -98,7 +135,11 @@ func TestPktlineReaderReadsManyPacketsInMultipleCallsWithUnevenBuffering(t *test
 func TestPktlineReaderReadsSinglePacketsInMultipleCallsWithEvenBuffering(t *testing.T) {
 	var buf bytes.Buffer
 
+<<<<<<< HEAD
 	writePacket(t, &buf, []byte("firstother"))
+=======
+	writePacket(&buf, []byte("firstother"))
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 
 	pr := &pktlineReader{pl: newPktline(&buf, nil)}
 
@@ -119,7 +160,11 @@ func TestPktlineReaderReadsSinglePacketsInMultipleCallsWithEvenBuffering(t *test
 func TestPktlineReaderReadsManyPacketsInMultipleCallsWithEvenBuffering(t *testing.T) {
 	var buf bytes.Buffer
 
+<<<<<<< HEAD
 	writePacket(t, &buf, []byte("first"), []byte("other"))
+=======
+	writePacket(&buf, []byte("first"), []byte("other"))
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 
 	pr := &pktlineReader{pl: newPktline(&buf, nil)}
 
@@ -135,7 +180,11 @@ func TestPktlineReaderReadsManyPacketsInMultipleCallsWithEvenBuffering(t *testin
 	n2, e2 := pr.Read(p2[:])
 	assert.Equal(t, 5, n2)
 	assert.Equal(t, []byte("other"), p2[:])
+<<<<<<< HEAD
 	assert.Equal(t, io.EOF, e2)
+=======
+	assert.Equal(t, nil, e2)
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 
 	n3, e3 := pr.Read(p3)
 	assert.Equal(t, 0, n3)

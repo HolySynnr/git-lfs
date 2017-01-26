@@ -141,6 +141,7 @@ begin_test "uninstall hooks inside repository"
   [ "git-lfs smudge -- %f" = "$(git config filter.lfs.smudge)" ]
   [ "git-lfs clean -- %f" = "$(git config filter.lfs.clean)" ]
   [ "git-lfs filter-process" = "$(git config filter.lfs.process)" ]
+<<<<<<< HEAD
 )
 end_test
 
@@ -180,5 +181,7 @@ begin_test "uninstall --local"
   [ "" = "$(git config --local filter.lfs.smudge)" ]
   [ "" = "$(git config --local filter.lfs.clean)" ]
   [ "" = "$(git config --local filter.lfs.process)" ]
+=======
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 )
 end_test

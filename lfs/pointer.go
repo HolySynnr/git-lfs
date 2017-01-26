@@ -132,6 +132,7 @@ func DecodeFrom(reader io.Reader) (*Pointer, io.Reader, error) {
 	n, err := reader.Read(buf)
 	buf = buf[:n]
 
+<<<<<<< HEAD
 	var contents io.Reader = bytes.NewReader(buf)
 	if err != io.EOF {
 		contents = io.MultiReader(contents, reader)
@@ -139,6 +140,10 @@ func DecodeFrom(reader io.Reader) (*Pointer, io.Reader, error) {
 
 	if err != nil && err != io.EOF {
 		return nil, contents, err
+=======
+	if err != nil && err != io.EOF {
+		return output, nil, err
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 	}
 
 	p, err := decodeKV(bytes.TrimSpace(buf))

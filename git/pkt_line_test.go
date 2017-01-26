@@ -169,6 +169,7 @@ func TestPktLineWritesPackets(t *testing.T) {
 	var buf bytes.Buffer
 
 	rw := newPktline(nil, &buf)
+<<<<<<< HEAD
 	require.Nil(t, rw.writePacket([]byte{
 		0x1, 0x2, 0x3, 0x4,
 	}))
@@ -178,6 +179,16 @@ func TestPktLineWritesPackets(t *testing.T) {
 		0x30, 0x30, 0x30, 0x38, // 0008 (hex. length)
 		0x1, 0x2, 0x3, 0x4, // payload
 		0x30, 0x30, 0x30, 0x30, // 0000 (flush packet)
+=======
+	err := rw.writePacket([]byte{
+		0x1, 0x2, 0x3, 0x4,
+	})
+
+	assert.Nil(t, err)
+	assert.Equal(t, []byte{
+		0x30, 0x30, 0x30, 0x38, // 0008 (hex. length)
+		0x1, 0x2, 0x3, 0x4, // payload
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 	}, buf.Bytes())
 }
 
@@ -206,6 +217,7 @@ func TestPktLineWritesPacketText(t *testing.T) {
 	var buf bytes.Buffer
 
 	rw := newPktline(nil, &buf)
+<<<<<<< HEAD
 
 	require.Nil(t, rw.writePacketText("abcd"))
 	require.Nil(t, rw.writeFlush())
@@ -214,6 +226,14 @@ func TestPktLineWritesPacketText(t *testing.T) {
 		0x30, 0x30, 0x30, 0x39, // 0009 (hex. length)
 		0x61, 0x62, 0x63, 0x64, 0xa, // "abcd\n" (payload)
 		0x30, 0x30, 0x30, 0x30, // 0000 (flush packet)
+=======
+	err := rw.writePacketText("abcd")
+
+	assert.Nil(t, err)
+	assert.Equal(t, []byte{
+		0x30, 0x30, 0x30, 0x39, // 0009 (hex. length)
+		0x61, 0x62, 0x63, 0x64, 0xa, // "abcd\n" (payload)
+>>>>>>> refs/remotes/git-lfs/filter-stream-rebased
 	}, buf.Bytes())
 }
 
