@@ -176,8 +176,14 @@ func buildTestData(manifest *tq.Manifest) (oidsExist, oidsMissing []TestObject, 
 	}
 	outputs := repo.AddCommits([]*test.CommitInput{&commit})
 
+	// create metadata
+	meta := &api.BatchMetadata{Ref: "refs/heads/master"}
 	// now upload
+<<<<<<< HEAD
 	uploadQueue := tq.NewTransferQueue(tq.Upload, manifest, "origin", tq.WithProgress(meter))
+=======
+	uploadQueue := lfs.NewUploadQueue(len(oidsExist), totalSize, meta, false)
+>>>>>>> refs/remotes/git-lfs/dluksza-include-ref-in-upload-request
 	for _, f := range outputs[0].Files {
 		oidsExist = append(oidsExist, TestObject{Oid: f.Oid, Size: f.Size})
 
@@ -269,7 +275,12 @@ func callBatchApi(manifest *tq.Manifest, dir tq.Direction, objs []TestObject) ([
 		apiobjs = append(apiobjs, &tq.Transfer{Oid: o.Oid, Size: o.Size})
 	}
 
+<<<<<<< HEAD
 	bres, err := tq.Batch(manifest, dir, "origin", apiobjs)
+=======
+	meta := &api.BatchMetadata{Ref: "refs/heads/master"}
+	o, _, err := api.Batch(config.Config, apiobjs, op, []string{"basic"}, meta)
+>>>>>>> refs/remotes/git-lfs/dluksza-include-ref-in-upload-request
 	if err != nil {
 		return nil, err
 	}

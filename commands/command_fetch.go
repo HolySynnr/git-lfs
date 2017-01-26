@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+<<<<<<< HEAD
 	"github.com/git-lfs/git-lfs/filepathfilter"
 	"github.com/git-lfs/git-lfs/git"
 	"github.com/git-lfs/git-lfs/lfs"
@@ -12,6 +13,12 @@ import (
 	"github.com/git-lfs/git-lfs/tq"
 =======
 >>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
+=======
+	"github.com/github/git-lfs/api"
+	"github.com/github/git-lfs/git"
+	"github.com/github/git-lfs/lfs"
+	"github.com/github/git-lfs/progress"
+>>>>>>> refs/remotes/git-lfs/dluksza-include-ref-in-upload-request
 	"github.com/rubyist/tracerx"
 	"github.com/spf13/cobra"
 )
@@ -92,7 +99,11 @@ func fetchCommand(cmd *cobra.Command, args []string) {
 		// Fetch refs sequentially per arg order; duplicates in later refs will be ignored
 		for _, ref := range refs {
 			Print("Fetching %v", ref.Name)
+<<<<<<< HEAD
 			s := fetchRef(ref.Sha, filter)
+=======
+			s := fetchRef(ref, includePaths, excludePaths)
+>>>>>>> refs/remotes/git-lfs/dluksza-include-ref-in-upload-request
 			success = success && s
 		}
 
@@ -131,17 +142,26 @@ func pointersToFetchForRef(ref string, filter *filepathfilter.Filter) ([]*lfs.Wr
 		pointers = append(pointers, p)
 	})
 
+<<<<<<< HEAD
 	tempgitscanner.Filter = filter
 =======
 func fetchRefToChan(ref string, filter *filepathfilter.Filter) chan *lfs.WrappedPointer {
+=======
+func fetchRefToChan(ref *git.Ref, include, exclude []string) chan *lfs.WrappedPointer {
+>>>>>>> refs/remotes/git-lfs/dluksza-include-ref-in-upload-request
 	c := make(chan *lfs.WrappedPointer)
-	pointers, err := pointersToFetchForRef(ref)
+	pointers, err := pointersToFetchForRef(ref.Sha)
 	if err != nil {
 		Panic(err, "Could not scan for Git LFS files")
 	}
 
+<<<<<<< HEAD
 	go fetchAndReportToChan(pointers, filter, c)
 >>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
+=======
+	meta := &api.BatchMetadata{Ref: ref.Name}
+	go fetchAndReportToChan(pointers, include, exclude, meta, c)
+>>>>>>> refs/remotes/git-lfs/dluksza-include-ref-in-upload-request
 
 	if err := tempgitscanner.ScanTree(ref); err != nil {
 		return nil, err
@@ -152,6 +172,7 @@ func fetchRefToChan(ref string, filter *filepathfilter.Filter) chan *lfs.Wrapped
 }
 
 // Fetch all binaries for a given ref (that we don't have already)
+<<<<<<< HEAD
 func fetchRef(ref string, filter *filepathfilter.Filter) bool {
 <<<<<<< HEAD
 	pointers, err := pointersToFetchForRef(ref, filter)
@@ -166,10 +187,20 @@ func fetchRef(ref string, filter *filepathfilter.Filter) bool {
 	}
 	return fetchPointers(pointers, filter)
 >>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
+=======
+func fetchRef(ref *git.Ref, include, exclude []string) bool {
+	pointers, err := pointersToFetchForRef(ref.Sha)
+	if err != nil {
+		Panic(err, "Could not scan for Git LFS files")
+	}
+	meta := &api.BatchMetadata{Ref: ref.Name}
+	return fetchPointers(pointers, include, exclude, meta)
+>>>>>>> refs/remotes/git-lfs/dluksza-include-ref-in-upload-request
 }
 
 // Fetch all previous versions of objects from since to ref (not including final state at ref)
 // So this will fetch all the '-' sides of the diff from since to ref
+<<<<<<< HEAD
 func fetchPreviousVersions(ref string, since time.Time, filter *filepathfilter.Filter) bool {
 <<<<<<< HEAD
 	var pointers []*lfs.WrappedPointer
@@ -198,6 +229,15 @@ func fetchPreviousVersions(ref string, since time.Time, filter *filepathfilter.F
 	}
 	return fetchPointers(pointers, filter)
 >>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
+=======
+func fetchPreviousVersions(ref *git.Ref, since time.Time, include, exclude []string) bool {
+	pointers, err := lfs.ScanPreviousVersions(ref.Sha, since)
+	if err != nil {
+		Panic(err, "Could not scan for Git LFS previous versions")
+	}
+	meta := &api.BatchMetadata{Ref: ref.Name}
+	return fetchPointers(pointers, include, exclude, meta)
+>>>>>>> refs/remotes/git-lfs/dluksza-include-ref-in-upload-request
 }
 
 // Fetch recent objects based on config
@@ -231,7 +271,11 @@ func fetchRecent(alreadyFetchedRefs []*git.Ref, filter *filepathfilter.Filter) b
 			} else {
 				uniqueRefShas[ref.Sha] = ref.Name
 				Print("Fetching %v", ref.Name)
+<<<<<<< HEAD
 				k := fetchRef(ref.Sha, filter)
+=======
+				k := fetchRef(ref, include, exclude)
+>>>>>>> refs/remotes/git-lfs/dluksza-include-ref-in-upload-request
 				ok = ok && k
 			}
 		}
@@ -247,7 +291,12 @@ func fetchRecent(alreadyFetchedRefs []*git.Ref, filter *filepathfilter.Filter) b
 			}
 			Print("Fetching changes within %v days of %v", fetchconf.FetchRecentCommitsDays, refName)
 			commitsSince := summ.CommitDate.AddDate(0, 0, -fetchconf.FetchRecentCommitsDays)
+<<<<<<< HEAD
 			k := fetchPreviousVersions(commit, commitsSince, filter)
+=======
+			commitRef := &git.Ref{Name: refName, Sha: commit}
+			k := fetchPreviousVersions(commitRef, commitsSince, include, exclude)
+>>>>>>> refs/remotes/git-lfs/dluksza-include-ref-in-upload-request
 			ok = ok && k
 		}
 
@@ -259,10 +308,14 @@ func fetchAll() bool {
 	pointers := scanAll()
 	Print("Fetching objects...")
 <<<<<<< HEAD
+<<<<<<< HEAD
 	return fetchAndReportToChan(pointers, nil, nil)
 =======
 	return fetchPointers(pointers, nil)
 >>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
+=======
+	return fetchPointers(pointers, nil, nil, nil)
+>>>>>>> refs/remotes/git-lfs/dluksza-include-ref-in-upload-request
 }
 
 func scanAll() []*lfs.WrappedPointer {
@@ -304,14 +357,20 @@ func scanAll() []*lfs.WrappedPointer {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 func fetchPointers(pointers []*lfs.WrappedPointer, filter *filepathfilter.Filter) bool {
 	return fetchAndReportToChan(pointers, filter, nil)
+=======
+func fetchPointers(pointers []*lfs.WrappedPointer, include, exclude []string, meta *api.BatchMetadata) bool {
+	return fetchAndReportToChan(pointers, include, exclude, meta, nil)
+>>>>>>> refs/remotes/git-lfs/dluksza-include-ref-in-upload-request
 }
 
 >>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
 // Fetch and report completion of each OID to a channel (optional, pass nil to skip)
 // Returns true if all completed with no errors, false if errors were written to stderr/log
+<<<<<<< HEAD
 func fetchAndReportToChan(allpointers []*lfs.WrappedPointer, filter *filepathfilter.Filter, out chan<- *lfs.WrappedPointer) bool {
 	// Lazily initialize the current remote.
 	if len(cfg.CurrentRemote) == 0 {
@@ -330,6 +389,15 @@ func fetchAndReportToChan(allpointers []*lfs.WrappedPointer, filter *filepathfil
 	ready, pointers, totalSize := readyAndMissingPointers(allpointers, filter)
 	q := lfs.NewDownloadQueue(len(pointers), totalSize, false)
 >>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
+=======
+func fetchAndReportToChan(pointers []*lfs.WrappedPointer, include, exclude []string, meta *api.BatchMetadata, out chan<- *lfs.WrappedPointer) bool {
+
+	totalSize := int64(0)
+	for _, p := range pointers {
+		totalSize += p.Size
+	}
+	q := lfs.NewDownloadQueue(len(pointers), totalSize, meta, false)
+>>>>>>> refs/remotes/git-lfs/dluksza-include-ref-in-upload-request
 
 	if out != nil {
 		// If we already have it, or it won't be fetched

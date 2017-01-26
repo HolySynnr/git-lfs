@@ -40,6 +40,7 @@ func pullCommand(cmd *cobra.Command, args []string) {
 	pull(remote, filter)
 }
 
+<<<<<<< HEAD
 func pull(remote string, filter *filepathfilter.Filter) {
 	cfg.CurrentRemote = remote
 =======
@@ -49,11 +50,15 @@ func pull(remote string, filter *filepathfilter.Filter) {
 
 func pull(filter *filepathfilter.Filter) {
 >>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
+=======
+func pull(includePaths, excludePaths []string) {
+>>>>>>> refs/remotes/git-lfs/dluksza-include-ref-in-upload-request
 	ref, err := git.CurrentRef()
 	if err != nil {
 		Panic(err, "Could not pull")
 	}
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 	pointers := newPointerMap()
 	meter := progress.NewMeter(progress.WithOSEnv(cfg.Os))
@@ -68,6 +73,11 @@ func pull(filter *filepathfilter.Filter) {
 		if pointers.Seen(p) {
 			return
 		}
+=======
+	c := fetchRefToChan(ref, includePaths, excludePaths)
+	checkoutFromFetchChan(includePaths, excludePaths, c)
+}
+>>>>>>> refs/remotes/git-lfs/dluksza-include-ref-in-upload-request
 
 		// no need to download objects that exist locally already
 		lfs.LinkOrCopyFromReference(p.Oid, p.Size)

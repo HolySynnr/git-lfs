@@ -70,9 +70,13 @@ func prePushCommand(cmd *cobra.Command, args []string) {
 			continue
 		}
 
+<<<<<<< HEAD
 		tracerx.Printf("pre-push: %s", line)
 
 		left, _ := decodeRefs(line)
+=======
+		left, right, destRef := decodeRefs(line)
+>>>>>>> refs/remotes/git-lfs/dluksza-include-ref-in-upload-request
 		if left == prePushDeleteBranch {
 			continue
 		}
@@ -81,26 +85,35 @@ func prePushCommand(cmd *cobra.Command, args []string) {
 			Print("Error scanning for Git LFS files in %q", left)
 			ExitWithError(err)
 		}
+<<<<<<< HEAD
+=======
+
+		upload(ctx, destRef, pointers)
+>>>>>>> refs/remotes/git-lfs/dluksza-include-ref-in-upload-request
 	}
 
 	ctx.Await()
 }
 
-// decodeRefs pulls the sha1s out of the line read from the pre-push
+// decodeRefs pulls the sha1s and destination ref out of the line read from the pre-push
 // hook's stdin.
-func decodeRefs(input string) (string, string) {
+func decodeRefs(input string) (string, string, string) {
 	refs := strings.Split(strings.TrimSpace(input), " ")
-	var left, right string
+	var left, right, destRef string
 
 	if len(refs) > 1 {
 		left = refs[1]
+	}
+
+	if len(refs) > 2 {
+		destRef = refs[2]
 	}
 
 	if len(refs) > 3 {
 		right = "^" + refs[3]
 	}
 
-	return left, right
+	return left, right, destRef
 }
 
 func init() {

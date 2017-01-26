@@ -2,6 +2,7 @@ package commands
 
 import (
 	"os"
+<<<<<<< HEAD
 	"sync"
 
 	"github.com/git-lfs/git-lfs/errors"
@@ -10,6 +11,13 @@ import (
 	"github.com/git-lfs/git-lfs/progress"
 	"github.com/git-lfs/git-lfs/tools"
 	"github.com/git-lfs/git-lfs/tq"
+=======
+
+	"github.com/github/git-lfs/api"
+	"github.com/github/git-lfs/errutil"
+	"github.com/github/git-lfs/lfs"
+	"github.com/github/git-lfs/tools"
+>>>>>>> refs/remotes/git-lfs/dluksza-include-ref-in-upload-request
 )
 
 type uploadContext struct {
@@ -72,7 +80,11 @@ func (c *uploadContext) HasUploaded(oid string) bool {
 	return c.uploadedOids.Contains(oid)
 }
 
+<<<<<<< HEAD
 func (c *uploadContext) prepareUpload(unfiltered ...*lfs.WrappedPointer) (*tq.TransferQueue, []*lfs.WrappedPointer) {
+=======
+func (c *uploadContext) prepareUpload(destRef string, unfiltered []*lfs.WrappedPointer) (*lfs.TransferQueue, []*lfs.WrappedPointer) {
+>>>>>>> refs/remotes/git-lfs/dluksza-include-ref-in-upload-request
 	numUnfiltered := len(unfiltered)
 	uploadables := make([]*lfs.WrappedPointer, 0, numUnfiltered)
 
@@ -110,20 +122,76 @@ func (c *uploadContext) prepareUpload(unfiltered ...*lfs.WrappedPointer) (*tq.Tr
 			c.trackedLocksMu.Unlock()
 		}
 
+<<<<<<< HEAD
 		if canUpload {
 			// estimate in meter early (even if it's not going into
 			// uploadables), since we will call Skip() based on the
 			// results of the download check queue.
 			c.meter.Add(p.Size)
 
+=======
+	var meta *api.BatchMetadata
+	if len(destRef) > 0 {
+		meta = &api.BatchMetadata{Ref: destRef}
+	}
+
+	// check to see if the server has the missing objects.
+	c.checkMissing(missingLocalObjects, missingSize, meta)
+
+	// build the TransferQueue, automatically skipping any missing objects that
+	// the server already has.
+	uploadQueue := lfs.NewUploadQueue(numObjects, totalSize, meta, c.DryRun)
+	for _, p := range missingLocalObjects {
+		if c.HasUploaded(p.Oid) {
+			uploadQueue.Skip(p.Size)
+		} else {
+>>>>>>> refs/remotes/git-lfs/dluksza-include-ref-in-upload-request
 			uploadables = append(uploadables, p)
 		}
 	}
 
+<<<<<<< HEAD
 	return c.tq, uploadables
 }
 
 func uploadPointers(c *uploadContext, unfiltered ...*lfs.WrappedPointer) {
+=======
+	return uploadQueue, uploadables
+}
+
+// This checks the given slice of pointers that don't exist in .git/lfs/objects
+// against the server. Anything the server already has does not need to be
+// uploaded again.
+func (c *uploadContext) checkMissing(missing []*lfs.WrappedPointer, missingSize int64, meta *api.BatchMetadata) {
+	numMissing := len(missing)
+	if numMissing == 0 {
+		return
+	}
+
+	checkQueue := lfs.NewDownloadCheckQueue(numMissing, missingSize, meta)
+
+	// this channel is filled with oids for which Check() succeeded & Transfer() was called
+	transferc := checkQueue.Watch()
+
+	for _, p := range missing {
+		checkQueue.Add(lfs.NewDownloadable(p))
+	}
+
+	done := make(chan int)
+	go func() {
+		for oid := range transferc {
+			c.SetUploaded(oid)
+		}
+		done <- 1
+	}()
+
+	// Currently this is needed to flush the batch but is not enough to sync transferc completely
+	checkQueue.Wait()
+	<-done
+}
+
+func upload(c *uploadContext, destRef string, unfiltered []*lfs.WrappedPointer) {
+>>>>>>> refs/remotes/git-lfs/dluksza-include-ref-in-upload-request
 	if c.DryRun {
 		for _, p := range unfiltered {
 			if c.HasUploaded(p.Oid) {
@@ -137,7 +205,11 @@ func uploadPointers(c *uploadContext, unfiltered ...*lfs.WrappedPointer) {
 		return
 	}
 
+<<<<<<< HEAD
 	q, pointers := c.prepareUpload(unfiltered...)
+=======
+	q, pointers := c.prepareUpload(destRef, unfiltered)
+>>>>>>> refs/remotes/git-lfs/dluksza-include-ref-in-upload-request
 	for _, p := range pointers {
 		t, err := uploadTransfer(p)
 		if err != nil && !errors.IsCleanPointerError(err) {

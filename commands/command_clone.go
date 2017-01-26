@@ -76,8 +76,17 @@ func cloneCommand(cmd *cobra.Command, args []string) {
 	filter := buildFilepathFilter(cfg, includeArg, excludeArg)
 	if cloneFlags.NoCheckout || cloneFlags.Bare {
 		// If --no-checkout or --bare then we shouldn't check out, just fetch instead
+<<<<<<< HEAD
 		cfg.CurrentRemote = remote
 		fetchRef("HEAD", filter)
+=======
+		ref := &git.Ref{
+			Name: "HEAD",
+			Sha:  "HEAD",
+			Type: git.RefTypeHEAD,
+		}
+		fetchRef(ref, include, exclude)
+>>>>>>> refs/remotes/git-lfs/dluksza-include-ref-in-upload-request
 	} else {
 		pull(remote, filter)
 =======

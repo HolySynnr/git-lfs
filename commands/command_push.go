@@ -20,6 +20,24 @@ var (
 	// shares some global vars and functions with command_pre_push.go
 )
 
+<<<<<<< HEAD
+=======
+func uploadsBetweenRefs(ctx *uploadContext, left, right, destRef string) {
+	tracerx.Printf("Upload between %v and %v", left, right)
+
+	scanOpt := lfs.NewScanRefsOptions()
+	scanOpt.ScanMode = lfs.ScanRefsMode
+	scanOpt.RemoteName = cfg.CurrentRemote
+
+	pointers, err := lfs.ScanRefs(left, right, scanOpt)
+	if err != nil {
+		Panic(err, "Error scanning for Git LFS files")
+	}
+
+	upload(ctx, destRef, pointers)
+}
+
+>>>>>>> refs/remotes/git-lfs/dluksza-include-ref-in-upload-request
 func uploadsBetweenRefAndRemote(ctx *uploadContext, refnames []string) {
 	tracerx.Printf("Upload refs %v to remote %v", refnames, ctx.Remote)
 
@@ -57,6 +75,7 @@ func uploadLeftOrAll(g *lfs.GitScanner, ctx *uploadContext, ref string) error {
 			return
 		}
 
+<<<<<<< HEAD
 		uploadPointers(ctx, p)
 	}
 
@@ -68,6 +87,9 @@ func uploadLeftOrAll(g *lfs.GitScanner, ctx *uploadContext, ref string) error {
 		if err := g.ScanLeftToRemote(ref, cb); err != nil {
 			return err
 		}
+=======
+		upload(ctx, ref.Name, pointers)
+>>>>>>> refs/remotes/git-lfs/dluksza-include-ref-in-upload-request
 	}
 
 	return multiErr
@@ -94,7 +116,11 @@ func uploadsWithObjectIDs(ctx *uploadContext, oids []string) {
 		})
 	}
 
+<<<<<<< HEAD
 	ctx.Await()
+=======
+	upload(ctx, "", pointers)
+>>>>>>> refs/remotes/git-lfs/dluksza-include-ref-in-upload-request
 }
 
 func refsByNames(refnames []string) ([]*git.Ref, error) {
@@ -148,7 +174,17 @@ func pushCommand(cmd *cobra.Command, args []string) {
 
 	ctx := newUploadContext(args[0], pushDryRun)
 
+<<<<<<< HEAD
 	if pushObjectIDs {
+=======
+		left, right, destRef := decodeRefs(string(refsData))
+		if left == prePushDeleteBranch {
+			return
+		}
+
+		uploadsBetweenRefs(ctx, left, right, destRef)
+	} else if pushObjectIDs {
+>>>>>>> refs/remotes/git-lfs/dluksza-include-ref-in-upload-request
 		if len(args) < 2 {
 			Print("Usage: git lfs push --object-id <remote> <lfs-object-id> [lfs-object-id] ...")
 			return
