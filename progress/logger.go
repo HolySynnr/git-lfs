@@ -1,6 +1,7 @@
 package progress
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 import "os"
 =======
 import (
@@ -12,11 +13,19 @@ import (
 )
 >>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
 
+=======
+>>>>>>> refs/remotes/git-lfs/progress-cred-clash
 // progressLogger provides a wrapper around an os.File that can either
 // write to the file or ignore all writes completely.
 type progressLogger struct {
 	writeData bool
-	log       *os.File
+	log       progressLog
+}
+
+type progressLog interface {
+	Write([]byte) (int, error)
+	Close() error
+	Sync() error
 }
 
 // Write will write to the file and perform a Sync() if writing succeeds.

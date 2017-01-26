@@ -2,6 +2,7 @@ package progress
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -24,6 +25,7 @@ type ProgressMeter struct {
 	currentBytes      int64
 	skippedBytes      int64
 	started           int32
+	done              int32
 	estimatedFiles    int32
 	startTime         time.Time
 	finished          chan interface{}
@@ -31,6 +33,7 @@ type ProgressMeter struct {
 	fileIndex         map[string]int64 // Maps a file name to its transfer number
 	fileIndexMutex    *sync.Mutex
 	dryRun            bool
+	out               io.Writer
 }
 
 type env interface {
@@ -95,6 +98,7 @@ func NewMeter(options ...meterOption) *ProgressMeter {
 		fileIndex:      make(map[string]int64),
 		fileIndexMutex: &sync.Mutex{},
 		finished:       make(chan interface{}),
+		out:            os.Stdout,
 	}
 
 	for _, opt := range options {
@@ -105,10 +109,23 @@ func NewMeter(options ...meterOption) *ProgressMeter {
 }
 
 // Start begins sending status updates to the optional log file, and stdout.
-func (p *ProgressMeter) Start() {
-	if atomic.SwapInt32(&p.started, 1) == 0 {
+func (p *ProgressMeter) Start() bool {
+	if atomic.LoadInt32(&p.done) == 0 && atomic.CompareAndSwapInt32(&p.started, 0, 1) {
 		go p.writer()
+		return true
 	}
+	return false
+}
+
+// Pause temporarly stops sending status updates to the optional log file, and
+// stdout. Call Start() to resume.
+func (p *ProgressMeter) Pause() bool {
+	if atomic.LoadInt32(&p.done) == 0 && atomic.CompareAndSwapInt32(&p.started, 1, 0) {
+		p.finished <- true
+		return true
+	}
+
+	return false
 }
 
 // Add tells the progress meter that a single file of the given size will
@@ -153,13 +170,17 @@ func (p *ProgressMeter) FinishTransfer(name string) {
 }
 
 // Finish shuts down the ProgressMeter
-func (p *ProgressMeter) Finish() {
-	close(p.finished)
-	p.update()
-	p.logger.Close()
-	if !p.dryRun && p.estimatedBytes > 0 {
-		fmt.Fprintf(os.Stdout, "\n")
+func (p *ProgressMeter) Finish() bool {
+	if atomic.CompareAndSwapInt32(&p.done, 0, 1) {
+		close(p.finished)
+		p.update()
+		p.logger.Close()
+		if !p.dryRun && p.estimatedBytes > 0 {
+			fmt.Fprintf(p.out, "\n")
+		}
+		return true
 	}
+	return false
 }
 
 func (p *ProgressMeter) logBytes(direction, name string, read, total int64) {
@@ -201,7 +222,7 @@ func (p *ProgressMeter) update() {
 		out += fmt.Sprintf(", %s skipped", formatBytes(p.skippedBytes))
 	}
 
-	fmt.Fprintf(os.Stdout, pad(out))
+	fmt.Fprintf(p.out, pad(out))
 }
 
 func formatBytes(i int64) string {
