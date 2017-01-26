@@ -63,6 +63,7 @@ func filterCommand(cmd *cobra.Command, args []string) {
 
 		req := s.Request()
 
+		s.ForgetStatus()
 		s.WriteStatus(statusFromErr(nil))
 
 		switch req.Header["command"] {
