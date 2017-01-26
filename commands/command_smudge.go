@@ -44,19 +44,48 @@ func smudge(to io.Writer, from io.Reader, filename string, skip bool, filter *fi
 	}
 
 	lfs.LinkOrCopyFromReference(ptr.Oid, ptr.Size)
+<<<<<<< HEAD
+=======
+	if smudgeInfo {
+		// only invoked from `filter.lfs.smudge`, not `filter.lfs.process`
+		// NOTE: this is deprecated behavior and will be removed in v2.0.0
+
+		fmt.Fprintln(os.Stderr, "WARNING: 'smudge --info' is deprecated and will be removed in v2.0")
+		fmt.Fprintln(os.Stderr, "USE INSTEAD:")
+		fmt.Fprintln(os.Stderr, "  $ git lfs pointer --file=path/to/file")
+		fmt.Fprintln(os.Stderr, "  $ git lfs ls-files")
+		fmt.Fprintln(os.Stderr, "")
+
+		localPath, err := lfs.LocalMediaPath(ptr.Oid)
+		if err != nil {
+			Exit(err.Error())
+		}
+
+		if stat, err := longpathos.Stat(localPath); err != nil {
+			Print("%d --", ptr.Size)
+		} else {
+			Print("%d %s", stat.Size(), localPath)
+		}
+
+		return nil
+	}
+
+>>>>>>> refs/remotes/origin/release-1.5
 	cb, file, err := lfs.CopyCallbackFile("smudge", filename, 1, 1)
 	if err != nil {
 		return err
 	}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 	download := !skip
 	if download {
 		download = filter.Allows(filename)
 =======
 	filter := filepathfilter.New(cfg.FetchIncludePaths(), cfg.FetchExcludePaths())
+=======
+>>>>>>> refs/remotes/origin/release-1.5
 	download := filter.Allows(filename)
-
 	if skip || cfg.Os.Bool("GIT_LFS_SKIP_SMUDGE", false) {
 		download = false
 >>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
@@ -91,6 +120,7 @@ func smudgeCommand(cmd *cobra.Command, args []string) {
 	filter := filepathfilter.New(cfg.FetchIncludePaths(), cfg.FetchExcludePaths())
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 	if err := smudge(os.Stdout, os.Stdin, smudgeFilename(args), smudgeSkip, filter); err != nil {
 		if errors.IsNotAPointerError(err) {
 			fmt.Fprintln(os.Stderr, err.Error())
@@ -112,6 +142,11 @@ func smudgeCommand(cmd *cobra.Command, args []string) {
 		if stat, err := longpathos.Stat(localPath); err != nil {
 			Print("%d --", ptr.Size)
 >>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
+=======
+	if err := smudge(os.Stdout, os.Stdin, smudgeFilename(args), smudgeSkip, filter); err != nil {
+		if errors.IsNotAPointerError(err) {
+			fmt.Fprintln(os.Stderr, err.Error())
+>>>>>>> refs/remotes/origin/release-1.5
 		} else {
 			Error(err.Error())
 		}

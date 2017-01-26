@@ -44,13 +44,19 @@ func filterCommand(cmd *cobra.Command, args []string) {
 	}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> refs/remotes/origin/release-1.5
 	skip := filterSmudgeSkip || cfg.Os.Bool("GIT_LFS_SKIP_SMUDGE", false)
 	filter := filepathfilter.New(cfg.FetchIncludePaths(), cfg.FetchExcludePaths())
 
 	var malformed []string
 
+<<<<<<< HEAD
 =======
 >>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
+=======
+>>>>>>> refs/remotes/origin/release-1.5
 	for s.Scan() {
 		var err error
 		var w *git.PktlineWriter
@@ -76,6 +82,11 @@ func filterCommand(cmd *cobra.Command, args []string) {
 			err = nil
 =======
 >>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
+		}
+
+		if errors.IsNotAPointerError(err) {
+			malformed = append(malformed, req.Header["pathname"])
+			err = nil
 		}
 
 		var status string

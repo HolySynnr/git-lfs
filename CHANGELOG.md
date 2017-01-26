@@ -1,5 +1,23 @@
 # Git LFS Changelog
 
+## 1.5.5 (12 January, 2017)
+
+### Bugs
+
+* lfs: only buffer first 1k when creating a CleanPointerError #1856 (@ttaylorr)
+
+## 1.5.4 (27 December, 2016)
+
+### Bugs
+
+* progress: guard negative padding width, panic in `strings.Repeat` #1807 (@ttaylorr)
+* commands,lfs: handle malformed pointers #1805 (@ttaylorr)
+
+### Misc
+
+* script/packagecloud: release LFS on fedora/25 #1798 (@ttaylorr)
+* backport filepathfilter to v1.5.x #1782 (@technoweenie)
+
 ## 1.5.3 (5 December, 2016)
 
 ### Bugs
