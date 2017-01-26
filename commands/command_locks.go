@@ -1,9 +1,13 @@
 package commands
 
 import (
+<<<<<<< HEAD
 	"encoding/json"
 	"os"
 
+=======
+	"github.com/github/git-lfs/locking"
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 	"github.com/spf13/cobra"
 )
 
@@ -12,11 +16,16 @@ var (
 )
 
 func locksCommand(cmd *cobra.Command, args []string) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 	filters, err := locksCmdFlags.Filters()
 	if err != nil {
 		Exit("Error building filters: %v", err)
 	}
 
+<<<<<<< HEAD
 	lockClient := newLockClient(lockRemote)
 	defer lockClient.Close()
 
@@ -29,8 +38,18 @@ func locksCommand(cmd *cobra.Command, args []string) {
 			Error(err.Error())
 		}
 		return
-	}
+=======
+	var lockCount int
+	locks := locking.SearchLocks(lockRemote, filters, locksCmdFlags.Limit, locksCmdFlags.Local)
 
+	for lock := range locks.Results {
+		Print("%s\t%s <%s>", lock.Path, lock.Committer.Name, lock.Committer.Email)
+		lockCount++
+>>>>>>> refs/remotes/git-lfs/locking-workflow
+	}
+	err = locks.Wait()
+
+<<<<<<< HEAD
 	for _, lock := range locks {
 		Print("%s\t%s", lock.Path, lock.Committer)
 		lockCount++
@@ -39,6 +58,12 @@ func locksCommand(cmd *cobra.Command, args []string) {
 	if err != nil {
 		Exit("Error while retrieving locks: %v", err)
 	}
+=======
+	if err != nil {
+		Exit("Error while retrieving locks: %v", err)
+	}
+
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 	Print("\n%d lock(s) matched query.", lockCount)
 }
 
@@ -57,8 +82,11 @@ type locksFlags struct {
 	// local limits the scope of lock reporting to the locally cached record
 	// of locks for the current user & doesn't query the server
 	Local bool
+<<<<<<< HEAD
 	// JSON is an optional parameter to output data in json format.
 	JSON bool
+=======
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 }
 
 // Filters produces a filter based on locksFlags instance.
@@ -91,6 +119,9 @@ func init() {
 		cmd.Flags().StringVarP(&locksCmdFlags.Id, "id", "i", "", "filter locks results matching a particular ID")
 		cmd.Flags().IntVarP(&locksCmdFlags.Limit, "limit", "l", 0, "optional limit for number of results to return")
 		cmd.Flags().BoolVarP(&locksCmdFlags.Local, "local", "", false, "only list cached local record of own locks")
+<<<<<<< HEAD
 		cmd.Flags().BoolVarP(&locksCmdFlags.JSON, "json", "", false, "print output in json")
+=======
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 	})
 }

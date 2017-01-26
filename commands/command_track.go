@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+<<<<<<< HEAD
 	"github.com/git-lfs/git-lfs/config"
 	"github.com/git-lfs/git-lfs/git"
 	"github.com/git-lfs/git-lfs/lfs"
@@ -18,6 +19,12 @@ import (
 	"github.com/git-lfs/git-lfs/tools"
 	"github.com/git-lfs/git-lfs/tools/longpathos"
 >>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
+=======
+	"github.com/github/git-lfs/config"
+	"github.com/github/git-lfs/git"
+	"github.com/github/git-lfs/lfs"
+	"github.com/github/git-lfs/locking"
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 	"github.com/spf13/cobra"
 )
 
@@ -30,6 +37,8 @@ var (
 	trackNotLockableFlag    bool
 	trackVerboseLoggingFlag bool
 	trackDryRunFlag         bool
+	trackLockableFlag       bool
+	trackNotLockableFlag    bool
 )
 
 func trackCommand(cmd *cobra.Command, args []string) {
@@ -46,6 +55,7 @@ func trackCommand(cmd *cobra.Command, args []string) {
 	}
 
 	lfs.InstallHooks(false)
+<<<<<<< HEAD
 	knownPatterns := git.GetAttributePaths(config.LocalWorkingDir, config.LocalGitDir)
 
 	if len(args) == 0 {
@@ -73,7 +83,22 @@ func trackCommand(cmd *cobra.Command, args []string) {
 	if addTrailingLinebreak {
 		if _, werr := attributesFile.WriteString("\n"); werr != nil {
 			Print("Error writing to .gitattributes")
+=======
+	knownPaths := config.GetAttributePaths()
+
+	if len(args) == 0 {
+		Print("Listing tracked paths")
+		for _, t := range knownPaths {
+			if t.Lockable {
+				Print("    %s [lockable] (%s)", t.Path, t.Source)
+
+			} else {
+				Print("    %s (%s)", t.Path, t.Source)
+
+			}
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 		}
+		return
 	}
 
 >>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
@@ -89,7 +114,12 @@ func trackCommand(cmd *cobra.Command, args []string) {
 ArgsLoop:
 	for _, unsanitizedPattern := range args {
 		pattern := cleanRootPath(unsanitizedPattern)
+<<<<<<< HEAD
 		for _, known := range knownPatterns {
+=======
+		for _, known := range knownPaths {
+
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 			if known.Path == filepath.Join(relpath, pattern) &&
 				((trackLockableFlag && known.Lockable) || // enabling lockable & already lockable (no change)
 					(trackNotLockableFlag && !known.Lockable) || // disabling lockable & not lockable (no change)
@@ -103,7 +133,11 @@ ArgsLoop:
 		encodedArg := strings.Replace(pattern, " ", "[[:space:]]", -1)
 		lockableArg := ""
 		if trackLockableFlag { // no need to test trackNotLockableFlag, if we got here we're disabling
+<<<<<<< HEAD
 			lockableArg = " " + git.LockableAttrib
+=======
+			lockableArg = " " + config.LockableAttrib
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 		}
 
 		changedAttribLines[pattern] = fmt.Sprintf("%s filter=lfs diff=lfs merge=lfs -text%v\n", encodedArg, lockableArg)
@@ -212,6 +246,7 @@ ArgsLoop:
 		}
 	}
 <<<<<<< HEAD
+<<<<<<< HEAD
 	// now flip read-only mode based on lockable / not lockable changes
 	lockClient := newLockClient(cfg.CurrentRemote)
 	err = lockClient.FixFileWriteFlagsInDir(relpath, readOnlyPatterns, writeablePatterns)
@@ -278,6 +313,11 @@ func findAttributeFiles() []string {
 func needsTrailingLinebreak(filename string) bool {
 	file, err := longpathos.Open(filename)
 >>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
+=======
+
+	// now flip read-only mode based on lockable / not lockable changes
+	err = locking.FixFileWriteFlagsInDir(relpath, readOnlyPatterns, writeablePatterns, true)
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 	if err != nil {
 		LoggedError(err, "Error changing lockable file permissions")
 	}
@@ -303,5 +343,7 @@ func init() {
 		cmd.Flags().BoolVarP(&trackNotLockableFlag, "not-lockable", "", false, "remove lockable attribute from pattern")
 		cmd.Flags().BoolVarP(&trackVerboseLoggingFlag, "verbose", "v", false, "log which files are being tracked and modified")
 		cmd.Flags().BoolVarP(&trackDryRunFlag, "dry-run", "d", false, "preview results of running `git lfs track`")
+		cmd.Flags().BoolVarP(&trackLockableFlag, "lockable", "l", false, "make pattern lockable, i.e. read-only unless locked")
+		cmd.Flags().BoolVarP(&trackNotLockableFlag, "not-lockable", "", false, "remove lockable attribute from pattern")
 	})
 }

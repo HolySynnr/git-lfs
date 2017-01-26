@@ -156,7 +156,11 @@ I've done some tests with chmod and discovered:
     set anyway for file to be edited, so not a problem?
 * Reset a branch to a previous commit
   * Doesn't call `post-checkout` - PROBLEM because can restore write bit & file
+<<<<<<< HEAD
     was not modified. BUT: rare & maybe liveable
+=======
+    was not modified
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 * Merge a branch with lockable file changes (non-conflicting)
 * Rebase a branch with lockable files (non-conflicting)
 * Merge conflicts - fix then commit

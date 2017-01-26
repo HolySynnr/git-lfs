@@ -17,13 +17,19 @@ var (
 	// postCheckoutHook invokes `git lfs post-checkout`
 	postCheckoutHook = NewStandardHook("post-checkout", []string{})
 	postCommitHook   = NewStandardHook("post-commit", []string{})
+<<<<<<< HEAD
 	postMergeHook    = NewStandardHook("post-merge", []string{})
+=======
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 
 	hooks = []*Hook{
 		prePushHook,
 		postCheckoutHook,
 		postCommitHook,
+<<<<<<< HEAD
 		postMergeHook,
+=======
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 	}
 
 	filters = &Attribute{

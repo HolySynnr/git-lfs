@@ -103,6 +103,7 @@ func StackTrace(err error) []string {
 }
 
 func Combine(errs []error) error {
+<<<<<<< HEAD
 	if len(errs) == 0 {
 		return nil
 	}
@@ -115,4 +116,18 @@ func Combine(errs []error) error {
 		buf.WriteString(err.Error())
 	}
 	return fmt.Errorf(buf.String())
+=======
+	if len(errs) > 0 {
+		var buf bytes.Buffer
+		for i, err := range errs {
+			if i > 0 {
+				buf.WriteString("\n")
+			}
+			buf.WriteString(err.Error())
+		}
+		return fmt.Errorf(buf.String())
+	}
+	return nil
+
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 }

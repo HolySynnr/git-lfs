@@ -18,10 +18,13 @@ git lfs post-checkout \"\$@\""
 command -v git-lfs >/dev/null 2>&1 || { echo >&2 \"\\nThis repository is configured for Git LFS but 'git-lfs' was not found on your path. If you no longer wish to use Git LFS, remove this hook by deleting .git/hooks/post-commit.\\n\"; exit 2; }
 git lfs post-commit \"\$@\""
 
+<<<<<<< HEAD
   post_merge_hook="#!/bin/sh
 command -v git-lfs >/dev/null 2>&1 || { echo >&2 \"\\nThis repository is configured for Git LFS but 'git-lfs' was not found on your path. If you no longer wish to use Git LFS, remove this hook by deleting .git/hooks/post-merge.\\n\"; exit 2; }
 git lfs post-merge \"\$@\""
 
+=======
+>>>>>>> refs/remotes/git-lfs/locking-workflow
   mkdir without-pre-push
   cd without-pre-push
   git init
@@ -30,14 +33,20 @@ git lfs post-merge \"\$@\""
   [ "$pre_push_hook" = "$(cat .git/hooks/pre-push)" ]
   [ "$post_checkout_hook" = "$(cat .git/hooks/post-checkout)" ]
   [ "$post_commit_hook" = "$(cat .git/hooks/post-commit)" ]
+<<<<<<< HEAD
   [ "$post_merge_hook" = "$(cat .git/hooks/post-merge)" ]
+=======
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 
   # run it again
   [ "Updated git hooks." = "$(git lfs update)" ]
   [ "$pre_push_hook" = "$(cat .git/hooks/pre-push)" ]
   [ "$post_checkout_hook" = "$(cat .git/hooks/post-checkout)" ]
   [ "$post_commit_hook" = "$(cat .git/hooks/post-commit)" ]
+<<<<<<< HEAD
   [ "$post_merge_hook" = "$(cat .git/hooks/post-merge)" ]
+=======
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 
   # replace old hook 1
   echo "#!/bin/sh
@@ -61,12 +70,18 @@ git lfs pre-push \"\$@\"" > .git/hooks/pre-push
   rm .git/hooks/pre-push
   touch .git/hooks/pre-push
   touch .git/hooks/post-checkout
+<<<<<<< HEAD
   touch .git/hooks/post-merge
+=======
+>>>>>>> refs/remotes/git-lfs/locking-workflow
   [ "Updated git hooks." = "$(git lfs update)" ]
   [ "$pre_push_hook" = "$(cat .git/hooks/pre-push)" ]
   [ "$post_checkout_hook" = "$(cat .git/hooks/post-checkout)" ]
   [ "$post_commit_hook" = "$(cat .git/hooks/post-commit)" ]
+<<<<<<< HEAD
   [ "$post_merge_hook" = "$(cat .git/hooks/post-merge)" ]
+=======
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 
   # replace old hook 4
   echo "#!/bin/sh
@@ -86,7 +101,10 @@ git lfs pre-push \"$@\""
   echo "test" > .git/hooks/pre-push
   echo "test" > .git/hooks/post-checkout
   echo "test" > .git/hooks/post-commit
+<<<<<<< HEAD
   echo "test" > .git/hooks/post-merge
+=======
+>>>>>>> refs/remotes/git-lfs/locking-workflow
   expected="Hook already exists: pre-push
 
 test
@@ -99,7 +117,10 @@ To resolve this, either:
   [ "test" = "$(cat .git/hooks/pre-push)" ]
   [ "test" = "$(cat .git/hooks/post-checkout)" ]
   [ "test" = "$(cat .git/hooks/post-commit)" ]
+<<<<<<< HEAD
   [ "test" = "$(cat .git/hooks/post-merge)" ]
+=======
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 
   # Make sure returns non-zero
   set +e
@@ -125,25 +146,35 @@ Add the following to .git/hooks/post-commit :
 
 #!/bin/sh
 command -v git-lfs >/dev/null 2>&1 || { echo >&2 \"\nThis repository is configured for Git LFS but 'git-lfs' was not found on your path. If you no longer wish to use Git LFS, remove this hook by deleting .git/hooks/post-commit.\n\"; exit 2; }
+<<<<<<< HEAD
 git lfs post-commit \"\$@\"
 Add the following to .git/hooks/post-merge :
 
 #!/bin/sh
 command -v git-lfs >/dev/null 2>&1 || { echo >&2 \"\nThis repository is configured for Git LFS but 'git-lfs' was not found on your path. If you no longer wish to use Git LFS, remove this hook by deleting .git/hooks/post-merge.\n\"; exit 2; }
 git lfs post-merge \"\$@\""
+=======
+git lfs post-commit \"\$@\""
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 
   [ "$expected" = "$(git lfs update --manual 2>&1)" ]
   [ "test" = "$(cat .git/hooks/pre-push)" ]
   [ "test" = "$(cat .git/hooks/post-checkout)" ]
   [ "test" = "$(cat .git/hooks/post-commit)" ]
+<<<<<<< HEAD
   [ "test" = "$(cat .git/hooks/post-merge)" ]
+=======
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 
   # force replace unexpected hook
   [ "Updated git hooks." = "$(git lfs update --force)" ]
   [ "$pre_push_hook" = "$(cat .git/hooks/pre-push)" ]
   [ "$post_checkout_hook" = "$(cat .git/hooks/post-checkout)" ]
   [ "$post_commit_hook" = "$(cat .git/hooks/post-commit)" ]
+<<<<<<< HEAD
   [ "$post_merge_hook" = "$(cat .git/hooks/post-merge)" ]
+=======
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 
   has_test_dir || exit 0
 

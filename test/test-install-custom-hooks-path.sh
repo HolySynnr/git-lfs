@@ -29,7 +29,10 @@ begin_test "install with supported core.hooksPath"
   [ ! -e ".git/post-checkout" ]
   [ -e "$hooks_dir/post-commit" ]
   [ ! -e ".git/post-commit" ]
+<<<<<<< HEAD
   [ -e "$hooks_dir/post-merge" ]
   [ ! -e ".git/post-merge" ]
+=======
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 )
 end_test

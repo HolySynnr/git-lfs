@@ -3,8 +3,13 @@ package commands
 import (
 	"os"
 
+<<<<<<< HEAD
 	"github.com/git-lfs/git-lfs/git"
 	"github.com/git-lfs/git-lfs/locking"
+=======
+	"github.com/github/git-lfs/git"
+	"github.com/github/git-lfs/locking"
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 	"github.com/rubyist/tracerx"
 	"github.com/spf13/cobra"
 )
@@ -25,6 +30,7 @@ func postCheckoutCommand(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
+<<<<<<< HEAD
 	// Skip entire hook if lockable read only feature is disabled
 	if !cfg.SetLockableFilesReadOnly() {
 		os.Exit(0)
@@ -43,11 +49,29 @@ func postCheckoutCommand(cmd *cobra.Command, args []string) {
 		postCheckoutRevChange(lockClient, args[0], args[1])
 	} else {
 		postCheckoutFileChange(lockClient)
+=======
+	requireGitVersion()
+
+	// Skip this hook if no lockable patterns have been configured
+	if len(locking.GetLockablePatterns()) == 0 ||
+		!cfg.Os.Bool("GIT_LFS_SET_LOCKABLE_READONLY", true) {
+		os.Exit(0)
+	}
+
+	if args[2] == "1" {
+		postCheckoutRevChange(args[0], args[1])
+	} else {
+		postCheckoutFileChange()
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 	}
 
 }
 
+<<<<<<< HEAD
 func postCheckoutRevChange(client *locking.Client, pre, post string) {
+=======
+func postCheckoutRevChange(pre, post string) {
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 	tracerx.Printf("post-checkout: changes between %v and %v", pre, post)
 	// We can speed things up by looking at the difference between previous HEAD
 	// and current HEAD, and only checking lockable files that are different
@@ -55,6 +79,7 @@ func postCheckoutRevChange(client *locking.Client, pre, post string) {
 
 	if err != nil {
 		LoggedError(err, "Warning: post-checkout rev diff %v:%v failed: %v\nFalling back on full scan.", pre, post, err)
+<<<<<<< HEAD
 		postCheckoutFileChange(client)
 	}
 	tracerx.Printf("post-checkout: checking write flags on %v", files)
@@ -70,6 +95,22 @@ func postCheckoutFileChange(client *locking.Client) {
 	// Sadly we don't get any information about what files were checked out,
 	// so we have to check the entire repo
 	err := client.FixAllLockableFileWriteFlags()
+=======
+		postCheckoutFileChange()
+	}
+	tracerx.Printf("post-checkout: checking write flags on %v", files)
+	err = locking.FixLockableFileWriteFlags(files)
+	if err != nil {
+		LoggedError(err, "Warning: post-checkout locked file check failed: %v", err)
+	}
+}
+
+func postCheckoutFileChange() {
+	tracerx.Printf("post-checkout: checking write flags for all lockable files")
+	// Sadly we don't get any information about what files were checked out,
+	// so we have to check the entire repo
+	err := locking.FixAllLockableFileWriteFlags()
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 	if err != nil {
 		LoggedError(err, "Warning: post-checkout locked file check failed: %v", err)
 	}

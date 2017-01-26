@@ -1,11 +1,17 @@
 package tools
 
 import (
+<<<<<<< HEAD
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
+=======
+	"io/ioutil"
+	"os"
+	"runtime"
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 	"testing"
 
 	"github.com/git-lfs/git-lfs/subprocess"
@@ -24,6 +30,7 @@ func TestCleanPathsReturnsNoResultsWhenGivenNoPaths(t *testing.T) {
 	assert.Empty(t, cleaned)
 }
 
+<<<<<<< HEAD
 func TestFastWalkBasic(t *testing.T) {
 	rootDir, err := ioutil.TempDir(os.TempDir(), "GitLfsTestFastWalkBasic")
 	if err != nil {
@@ -216,6 +223,8 @@ func collectFastWalkResults(fchan <-chan fastWalkInfo) ([]string, []error) {
 	return gotEntries, gotErrors
 }
 
+=======
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 func getFileMode(filename string) os.FileMode {
 	s, err := os.Stat(filename)
 	if err != nil {
@@ -234,10 +243,17 @@ func TestSetWriteFlag(t *testing.T) {
 	// Set up with read/write bit for all but no execute
 	assert.Nil(t, os.Chmod(filename, 0666))
 
+<<<<<<< HEAD
 	assert.Nil(t, SetFileWriteFlag(filename, false))
 	// should turn off all write
 	assert.EqualValues(t, 0444, getFileMode(filename))
 	assert.Nil(t, SetFileWriteFlag(filename, true))
+=======
+	assert.Nil(t, tools.SetFileWriteFlag(filename, false))
+	// should turn off all write
+	assert.EqualValues(t, 0444, getFileMode(filename))
+	assert.Nil(t, tools.SetFileWriteFlag(filename, true))
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 	// should only add back user write (on Mac/Linux)
 	if runtime.GOOS == "windows" {
 		assert.EqualValues(t, 0666, getFileMode(filename))
@@ -250,10 +266,17 @@ func TestSetWriteFlag(t *testing.T) {
 	if runtime.GOOS != "windows" {
 		// Set up with read/write/execute bit for all but no execute
 		assert.Nil(t, os.Chmod(filename, 0777))
+<<<<<<< HEAD
 		assert.Nil(t, SetFileWriteFlag(filename, false))
 		// should turn off all write but not execute
 		assert.EqualValues(t, 0555, getFileMode(filename))
 		assert.Nil(t, SetFileWriteFlag(filename, true))
+=======
+		assert.Nil(t, tools.SetFileWriteFlag(filename, false))
+		// should turn off all write but not execute
+		assert.EqualValues(t, 0555, getFileMode(filename))
+		assert.Nil(t, tools.SetFileWriteFlag(filename, true))
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 		// should only add back user write (on Mac/Linux)
 		if runtime.GOOS == "windows" {
 			assert.EqualValues(t, 0777, getFileMode(filename))
@@ -262,9 +285,15 @@ func TestSetWriteFlag(t *testing.T) {
 		}
 
 		assert.Nil(t, os.Chmod(filename, 0440))
+<<<<<<< HEAD
 		assert.Nil(t, SetFileWriteFlag(filename, false))
 		assert.EqualValues(t, 0440, getFileMode(filename))
 		assert.Nil(t, SetFileWriteFlag(filename, true))
+=======
+		assert.Nil(t, tools.SetFileWriteFlag(filename, false))
+		assert.EqualValues(t, 0440, getFileMode(filename))
+		assert.Nil(t, tools.SetFileWriteFlag(filename, true))
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 		// should only add back user write
 		assert.EqualValues(t, 0640, getFileMode(filename))
 	}

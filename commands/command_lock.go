@@ -7,8 +7,13 @@ import (
 	"path/filepath"
 	"strings"
 
+<<<<<<< HEAD
 	"github.com/git-lfs/git-lfs/git"
 	"github.com/git-lfs/git-lfs/tools/longpathos"
+=======
+	"github.com/github/git-lfs/git"
+	"github.com/github/git-lfs/locking"
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 	"github.com/spf13/cobra"
 )
 
@@ -18,6 +23,10 @@ var (
 )
 
 func lockCommand(cmd *cobra.Command, args []string) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 	if len(args) == 0 {
 		Print("Usage: git lfs lock <path>")
 		return
@@ -28,6 +37,7 @@ func lockCommand(cmd *cobra.Command, args []string) {
 		Exit(err.Error())
 	}
 
+<<<<<<< HEAD
 	lockClient := newLockClient(lockRemote)
 	defer lockClient.Close()
 
@@ -44,6 +54,14 @@ func lockCommand(cmd *cobra.Command, args []string) {
 	}
 
 	Print("\n'%s' was locked (%s)", args[0], lock.Id)
+=======
+	id, err := locking.Lock(path, lockRemote)
+	if err != nil {
+		Exit("Lock failed: %v", err)
+	}
+
+	Print("\n'%s' was locked (%s)", args[0], id)
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 }
 
 // lockPaths relativizes the given filepath such that it is relative to the root

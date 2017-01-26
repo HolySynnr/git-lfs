@@ -12,6 +12,7 @@ import (
 	"sync"
 	"time"
 
+<<<<<<< HEAD
 	"github.com/git-lfs/git-lfs/config"
 	"github.com/git-lfs/git-lfs/errors"
 	"github.com/git-lfs/git-lfs/filepathfilter"
@@ -27,6 +28,15 @@ import (
 	"github.com/git-lfs/git-lfs/tools/longpathos"
 	"github.com/git-lfs/git-lfs/transfer"
 >>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
+=======
+	"github.com/github/git-lfs/config"
+	"github.com/github/git-lfs/errors"
+	"github.com/github/git-lfs/git"
+	"github.com/github/git-lfs/lfs"
+	"github.com/github/git-lfs/locking"
+	"github.com/github/git-lfs/tools"
+	"github.com/github/git-lfs/transfer"
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 )
 
 // Populate man pages
@@ -260,6 +270,10 @@ func Panic(err error, format string, args ...interface{}) {
 func Cleanup() {
 	if err := lfs.ClearTempObjects(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error clearing old temp files: %s\n", err)
+	}
+
+	if err := locking.Cleanup(); err != nil {
+		fmt.Fprintf(os.Stderr, "Error cleaning up lock cache: %s\n", err)
 	}
 }
 

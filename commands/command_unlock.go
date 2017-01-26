@@ -1,8 +1,12 @@
 package commands
 
 import (
+<<<<<<< HEAD
 	"encoding/json"
 	"os"
+=======
+	"github.com/github/git-lfs/locking"
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 
 	"github.com/spf13/cobra"
 )
@@ -22,21 +26,32 @@ type unlockFlags struct {
 }
 
 func unlockCommand(cmd *cobra.Command, args []string) {
+<<<<<<< HEAD
 	lockClient := newLockClient(lockRemote)
 	defer lockClient.Close()
 
+=======
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 	if len(args) != 0 {
 		path, err := lockPath(args[0])
 		if err != nil {
 			Exit("Unable to determine path: %v", err.Error())
 		}
 
+<<<<<<< HEAD
 		err = lockClient.UnlockFile(path, unlockCmdFlags.Force)
+=======
+		err = locking.Unlock(path, lockRemote, unlockCmdFlags.Force)
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 		if err != nil {
 			Exit("Unable to unlock: %v", err.Error())
 		}
 	} else if unlockCmdFlags.Id != "" {
+<<<<<<< HEAD
 		err := lockClient.UnlockFileById(unlockCmdFlags.Id, unlockCmdFlags.Force)
+=======
+		err := locking.UnlockById(unlockCmdFlags.Id, lockRemote, unlockCmdFlags.Force)
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 		if err != nil {
 			Exit("Unable to unlock %v: %v", unlockCmdFlags.Id, err.Error())
 		}
@@ -44,6 +59,7 @@ func unlockCommand(cmd *cobra.Command, args []string) {
 		Error("Usage: git lfs unlock (--id my-lock-id | <path>)")
 	}
 
+<<<<<<< HEAD
 	if locksCmdFlags.JSON {
 		if err := json.NewEncoder(os.Stdout).Encode(struct {
 			Unlocked bool `json:"unlocked"`
@@ -52,6 +68,8 @@ func unlockCommand(cmd *cobra.Command, args []string) {
 		}
 		return
 	}
+=======
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 	Print("'%s' was unlocked", args[0])
 }
 

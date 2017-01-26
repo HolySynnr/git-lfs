@@ -3,7 +3,12 @@ package commands
 import (
 	"os"
 
+<<<<<<< HEAD
 	"github.com/git-lfs/git-lfs/git"
+=======
+	"github.com/github/git-lfs/git"
+	"github.com/github/git-lfs/locking"
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 	"github.com/rubyist/tracerx"
 	"github.com/spf13/cobra"
 )
@@ -12,6 +17,7 @@ import (
 // no arguments.
 // This hook checks that files which are lockable and not locked are made read-only,
 // optimising that based on what was added / modified in the commit.
+<<<<<<< HEAD
 // This is mainly to catch added files, since modified files should already be
 // locked. If we didn't do this, any added files would remain read/write on disk
 // even without a lock unless something else checked.
@@ -28,6 +34,15 @@ func postCommitCommand(cmd *cobra.Command, args []string) {
 
 	// Skip this hook if no lockable patterns have been configured
 	if len(lockClient.GetLockablePatterns()) == 0 {
+=======
+func postCommitCommand(cmd *cobra.Command, args []string) {
+	requireGitVersion()
+
+	// Skip this hook if no lockable patterns have been configured
+	// Or if told to skip locking read-only
+	if len(locking.GetLockablePatterns()) == 0 ||
+		!cfg.Os.Bool("GIT_LFS_SET_LOCKABLE_READONLY", true) {
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 		os.Exit(0)
 	}
 
@@ -41,7 +56,11 @@ func postCommitCommand(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 	tracerx.Printf("post-commit: checking write flags on %v", files)
+<<<<<<< HEAD
 	err = lockClient.FixLockableFileWriteFlags(files)
+=======
+	err = locking.FixLockableFileWriteFlags(files)
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 	if err != nil {
 		LoggedError(err, "Warning: post-commit locked file check failed: %v", err)
 	}

@@ -294,14 +294,32 @@ begin_test "track lockable"
 
   # track *.jpg once, lockable
   git lfs track --lockable "*.jpg" | grep "Tracking \*.jpg"
+<<<<<<< HEAD
   assert_attributes_count "jpg" "lockable" 1
   # track *.jpg again, don't change anything. Should retain lockable
   git lfs track "*.jpg" | grep "*.jpg already supported"
   assert_attributes_count "jpg" "lockable" 1
+=======
+  numjpg=$(grep -e "\*.jpg.*lockable" .gitattributes | wc -l)
+  if [ "$(printf "%d" "$numjpg")" != "1" ]; then
+    echo "wrong number of lockable jpgs"
+    cat .gitattributes
+    exit 1
+  fi
+  # track *.jpg again, don't change anything. Should retain lockable
+  git lfs track "*.jpg" | grep "*.jpg already supported"
+  numjpg=$(grep -e "\*.jpg.*lockable" .gitattributes | wc -l)
+  if [ "$(printf "%d" "$numjpg")" != "1" ]; then
+    echo "wrong number of lockable jpgs"
+    cat .gitattributes
+    exit 1
+  fi
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 
 
   # track *.png once, not lockable yet
   git lfs track "*.png" | grep "Tracking \*.png"
+<<<<<<< HEAD
   assert_attributes_count "png" "filter=lfs" 1
   assert_attributes_count "png" "lockable" 0
 
@@ -318,6 +336,54 @@ begin_test "track lockable"
   # check output reflects lockable
   out=$(git lfs track)
   echo "$out" | grep "Listing tracked patterns"
+=======
+  numpng=$(grep -e "\*.png" .gitattributes | wc -l)
+  numpnglockable=$(grep -e "\*.png.*lockable" .gitattributes | wc -l)
+  if [ "$(printf "%d" "$numpng")" != "1" ]; then
+    echo "wrong number of pngs"
+    cat .gitattributes
+    exit 1
+  fi
+  if [ "$(printf "%d" "$numpnglockable")" != "0" ]; then
+    echo "wrong number of lockable pngs"
+    cat .gitattributes
+    exit 1
+  fi
+
+  # track png again, enable lockable, should replace
+  git lfs track --lockable "*.png" | grep "Tracking \*.png"
+  numpng=$(grep -e "\*.png" .gitattributes | wc -l)
+  numpnglockable=$(grep -e "\*.png.*lockable" .gitattributes | wc -l)
+  if [ "$(printf "%d" "$numpng")" != "1" ]; then
+    echo "wrong number of pngs"
+    cat .gitattributes
+    exit 1
+  fi
+  if [ "$(printf "%d" "$numpnglockable")" != "1" ]; then
+    echo "wrong number of lockable pngs"
+    cat .gitattributes
+    exit 1
+  fi
+
+  # track png again, disable lockable, should replace
+  git lfs track --not-lockable "*.png" | grep "Tracking \*.png"
+  numpng=$(grep -e "\*.png" .gitattributes | wc -l)
+  numpnglockable=$(grep -e "\*.png.*lockable" .gitattributes | wc -l)
+  if [ "$(printf "%d" "$numpng")" != "1" ]; then
+    echo "wrong number of pngs"
+    cat .gitattributes
+    exit 1
+  fi
+  if [ "$(printf "%d" "$numpnglockable")" != "0" ]; then
+    echo "wrong number of lockable pngs"
+    cat .gitattributes
+    exit 1
+  fi
+
+  # check output reflects lockable
+  out=$(git lfs track)
+  echo "$out" | grep "Listing tracked paths"
+>>>>>>> refs/remotes/git-lfs/locking-workflow
   echo "$out" | grep "*.jpg \[lockable\] (.gitattributes)"
   echo "$out" | grep "*.png (.gitattributes)"
 )
@@ -375,3 +441,7 @@ begin_test "track lockable read-only/read-write"
 )
 end_test
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> refs/remotes/git-lfs/locking-workflow

@@ -48,11 +48,453 @@ type WrappedPointer struct {
 	*Pointer
 }
 
+<<<<<<< HEAD
+=======
+// indexFile is used when scanning the index. It stores the name of
+// the file, the status of the file in the index, and, in the case of
+// a moved or copied file, the original name of the file.
+type indexFile struct {
+	Name    string
+	SrcName string
+	Status  string
+}
+
+var z40 = regexp.MustCompile(`\^?0{40}`)
+
+type ScanningMode int
+
+const (
+	ScanRefsMode         = ScanningMode(iota) // 0 - or default scan mode
+	ScanAllMode          = ScanningMode(iota)
+	ScanLeftToRemoteMode = ScanningMode(iota)
+)
+
+type ScanRefsOptions struct {
+	ScanMode         ScanningMode
+	RemoteName       string
+	SkipDeletedBlobs bool
+	nameMap          map[string]string
+	mutex            *sync.Mutex
+}
+
+func (o *ScanRefsOptions) GetName(sha string) (string, bool) {
+	o.mutex.Lock()
+	name, ok := o.nameMap[sha]
+	o.mutex.Unlock()
+	return name, ok
+}
+
+func (o *ScanRefsOptions) SetName(sha, name string) {
+	o.mutex.Lock()
+	o.nameMap[sha] = name
+	o.mutex.Unlock()
+}
+
+func NewScanRefsOptions() *ScanRefsOptions {
+	return &ScanRefsOptions{
+		nameMap: make(map[string]string, 0),
+		mutex:   &sync.Mutex{},
+	}
+}
+
+// ScanRefs takes a ref and returns a slice of WrappedPointer objects
+// for all Git LFS pointers it finds for that ref.
+// Reports unique oids once only, not multiple times if >1 file uses the same content
+func ScanRefs(refLeft, refRight string, opt *ScanRefsOptions) ([]*WrappedPointer, error) {
+	s, err := ScanRefsToChan(refLeft, refRight, opt)
+	if err != nil {
+		return nil, err
+	}
+	pointers := make([]*WrappedPointer, 0)
+	for p := range s.Results {
+		pointers = append(pointers, p)
+	}
+	err = s.Wait()
+
+	return pointers, err
+
+}
+
+// ScanRefsToChan takes a ref and returns a channel of WrappedPointer objects
+// for all Git LFS pointers it finds for that ref.
+// Reports unique oids once only, not multiple times if >1 file uses the same content
+func ScanRefsToChan(refLeft, refRight string, opt *ScanRefsOptions) (*PointerChannelWrapper, error) {
+	if opt == nil {
+		opt = NewScanRefsOptions()
+	}
+	if refLeft == "" {
+		opt.ScanMode = ScanAllMode
+	}
+
+	start := time.Now()
+	defer func() {
+		tracerx.PerformanceSince("scan", start)
+	}()
+
+	revs, err := revListShas(refLeft, refRight, opt)
+	if err != nil {
+		return nil, err
+	}
+
+	smallShas, err := catFileBatchCheck(revs)
+	if err != nil {
+		return nil, err
+	}
+
+	pointers, err := catFileBatch(smallShas)
+	if err != nil {
+		return nil, err
+	}
+
+	retchan := make(chan *WrappedPointer, chanBufSize)
+	errchan := make(chan error, 1)
+	go func() {
+		for p := range pointers.Results {
+			if name, ok := opt.GetName(p.Sha1); ok {
+				p.Name = name
+			}
+			retchan <- p
+		}
+		err := pointers.Wait()
+		if err != nil {
+			errchan <- err
+		}
+		close(retchan)
+		close(errchan)
+	}()
+
+	return NewPointerChannelWrapper(retchan, errchan), nil
+}
+
+type indexFileMap struct {
+	// mutex guards nameMap and nameShaPairs
+	mutex *sync.Mutex
+	// nameMap maps SHA1s to a slice of `*indexFile`s
+	nameMap map[string][]*indexFile
+	// nameShaPairs maps "sha1:name" -> bool
+	nameShaPairs map[string]bool
+}
+
+// FilesFor returns all `*indexFile`s that match the given `sha`.
+func (m *indexFileMap) FilesFor(sha string) []*indexFile {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	return m.nameMap[sha]
+}
+
+// Add appends unique index files to the given SHA, "sha". A file is considered
+// unique if its combination of SHA and current filename have not yet been seen
+// by this instance "m" of *indexFileMap.
+func (m *indexFileMap) Add(sha string, index *indexFile) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	pairKey := strings.Join([]string{sha, index.Name}, ":")
+	if m.nameShaPairs[pairKey] {
+		return
+	}
+
+	m.nameMap[sha] = append(m.nameMap[sha], index)
+	m.nameShaPairs[pairKey] = true
+}
+
+// ScanIndex returns a slice of WrappedPointer objects for all Git LFS pointers
+// it finds in the index.
+//
+// Ref is the ref at which to scan, which may be "HEAD" if there is at least one
+// commit.
+func ScanIndex(ref string) ([]*WrappedPointer, error) {
+	indexMap := &indexFileMap{
+		nameMap:      make(map[string][]*indexFile),
+		nameShaPairs: make(map[string]bool),
+		mutex:        &sync.Mutex{},
+	}
+
+	start := time.Now()
+	defer func() {
+		tracerx.PerformanceSince("scan-staging", start)
+	}()
+
+	revs, err := revListIndex(ref, false, indexMap)
+	if err != nil {
+		return nil, err
+	}
+
+	cachedRevs, err := revListIndex(ref, true, indexMap)
+	if err != nil {
+		return nil, err
+	}
+
+	allRevsErr := make(chan error, 5) // can be multiple errors below
+	allRevsChan := make(chan string, 1)
+	allRevs := tools.NewStringChannelWrapper(allRevsChan, allRevsErr)
+	go func() {
+		seenRevs := make(map[string]bool, 0)
+
+		for rev := range revs.Results {
+			if !seenRevs[rev] {
+				allRevsChan <- rev
+				seenRevs[rev] = true
+			}
+		}
+		err := revs.Wait()
+		if err != nil {
+			allRevsErr <- err
+		}
+
+		for rev := range cachedRevs.Results {
+			if !seenRevs[rev] {
+				allRevsChan <- rev
+				seenRevs[rev] = true
+			}
+		}
+		err = cachedRevs.Wait()
+		if err != nil {
+			allRevsErr <- err
+		}
+		close(allRevsChan)
+		close(allRevsErr)
+	}()
+
+	smallShas, err := catFileBatchCheck(allRevs)
+	if err != nil {
+		return nil, err
+	}
+
+	pointerc, err := catFileBatch(smallShas)
+	if err != nil {
+		return nil, err
+	}
+
+	pointers := make([]*WrappedPointer, 0)
+	for p := range pointerc.Results {
+		for _, file := range indexMap.FilesFor(p.Sha1) {
+			// Append a new *WrappedPointer that combines the data
+			// from the index file, and the pointer "p".
+			pointers = append(pointers, &WrappedPointer{
+				Sha1:    p.Sha1,
+				Name:    file.Name,
+				SrcName: file.SrcName,
+				Status:  file.Status,
+				Size:    p.Size,
+				Pointer: p.Pointer,
+			})
+		}
+	}
+	err = pointerc.Wait()
+
+	return pointers, err
+
+}
+
+// Get additional arguments needed to limit 'git rev-list' to just the changes
+// in revTo that are also not on remoteName.
+//
+// Returns a slice of string command arguments, and a slice of string git
+// commits to pass to `git rev-list` via STDIN.
+func revListArgsRefVsRemote(refTo, remoteName string) ([]string, []string) {
+	// We need to check that the locally cached versions of remote refs are still
+	// present on the remote before we use them as a 'from' point. If the
+	// server implements garbage collection and a remote branch had been deleted
+	// since we last did 'git fetch --prune', then the objects in that branch may
+	// have also been deleted on the server if unreferenced.
+	// If some refs are missing on the remote, use a more explicit diff
+
+	cachedRemoteRefs, _ := git.CachedRemoteRefs(remoteName)
+	actualRemoteRefs, _ := git.RemoteRefs(remoteName)
+
+	// Only check for missing refs on remote; if the ref is different it has moved
+	// forward probably, and if not and the ref has changed to a non-descendant
+	// (force push) then that will cause a re-evaluation in a subsequent command anyway
+	missingRefs := tools.NewStringSet()
+	for _, cachedRef := range cachedRemoteRefs {
+		found := false
+		for _, realRemoteRef := range actualRemoteRefs {
+			if cachedRef.Type == realRemoteRef.Type && cachedRef.Name == realRemoteRef.Name {
+				found = true
+				break
+			}
+		}
+		if !found {
+			missingRefs.Add(cachedRef.Name)
+		}
+	}
+
+	if len(missingRefs) > 0 {
+		// Use only the non-missing refs as 'from' points
+		commits := make([]string, 1, len(cachedRemoteRefs)+1)
+		commits[0] = refTo
+		for _, cachedRef := range cachedRemoteRefs {
+			if !missingRefs.Contains(cachedRef.Name) {
+				commits = append(commits, "^"+cachedRef.Sha)
+			}
+		}
+		return []string{"--stdin"}, commits
+	} else {
+		// Safe to use cached
+		return []string{refTo, "--not", "--remotes=" + remoteName}, nil
+	}
+}
+
+// revListShas uses git rev-list to return the list of object sha1s
+// for the given ref. If all is true, ref is ignored. It returns a
+// channel from which sha1 strings can be read.
+func revListShas(refLeft, refRight string, opt *ScanRefsOptions) (*tools.StringChannelWrapper, error) {
+	refArgs := []string{"rev-list", "--objects"}
+	var stdin []string
+	switch opt.ScanMode {
+	case ScanRefsMode:
+		if opt.SkipDeletedBlobs {
+			refArgs = append(refArgs, "--no-walk")
+		} else {
+			refArgs = append(refArgs, "--do-walk")
+		}
+
+		refArgs = append(refArgs, refLeft)
+		if refRight != "" && !z40.MatchString(refRight) {
+			refArgs = append(refArgs, refRight)
+		}
+	case ScanAllMode:
+		refArgs = append(refArgs, "--all")
+	case ScanLeftToRemoteMode:
+		args, commits := revListArgsRefVsRemote(refLeft, opt.RemoteName)
+		refArgs = append(refArgs, args...)
+		if len(commits) > 0 {
+			stdin = commits
+		}
+	default:
+		return nil, errors.New("scanner: unknown scan type: " + strconv.Itoa(int(opt.ScanMode)))
+	}
+
+	// Use "--" at the end of the command to disambiguate arguments as refs,
+	// so Git doesn't complain about ambiguity if you happen to also have a
+	// file named "master".
+	refArgs = append(refArgs, "--")
+
+	cmd, err := startCommand("git", refArgs...)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(stdin) > 0 {
+		cmd.Stdin.Write([]byte(strings.Join(stdin, "\n")))
+	}
+
+	cmd.Stdin.Close()
+
+	revs := make(chan string, chanBufSize)
+	errchan := make(chan error, 5) // may be multiple errors
+
+	go func() {
+		scanner := bufio.NewScanner(cmd.Stdout)
+		for scanner.Scan() {
+			line := strings.TrimSpace(scanner.Text())
+			if len(line) < 40 {
+				continue
+			}
+
+			sha1 := line[0:40]
+			if len(line) > 40 {
+				opt.SetName(sha1, line[41:len(line)])
+			}
+			revs <- sha1
+		}
+
+		stderr, _ := ioutil.ReadAll(cmd.Stderr)
+		err := cmd.Wait()
+		if err != nil {
+			errchan <- fmt.Errorf("Error in git rev-list --objects: %v %v", err, string(stderr))
+		} else {
+			// Special case detection of ambiguous refs; lower level commands like
+			// git rev-list do not return non-zero exit codes in this case, just warn
+			ambiguousRegex := regexp.MustCompile(`warning: refname (.*) is ambiguous`)
+			if match := ambiguousRegex.FindStringSubmatch(string(stderr)); match != nil {
+				// Promote to fatal & exit
+				errchan <- fmt.Errorf("Error: ref %s is ambiguous", match[1])
+			}
+		}
+		close(revs)
+		close(errchan)
+	}()
+
+	return tools.NewStringChannelWrapper(revs, errchan), nil
+}
+
+// revListIndex uses git diff-index to return the list of object sha1s
+// for in the indexf. It returns a channel from which sha1 strings can be read.
+// The namMap will be filled indexFile pointers mapping sha1s to indexFiles.
+func revListIndex(atRef string, cache bool, indexMap *indexFileMap) (*tools.StringChannelWrapper, error) {
+	cmdArgs := []string{"diff-index", "-M"}
+	if cache {
+		cmdArgs = append(cmdArgs, "--cached")
+	}
+	cmdArgs = append(cmdArgs, atRef)
+
+	cmd, err := startCommand("git", cmdArgs...)
+	if err != nil {
+		return nil, err
+	}
+
+	cmd.Stdin.Close()
+
+	revs := make(chan string, chanBufSize)
+	errchan := make(chan error, 1)
+
+	go func() {
+		scanner := bufio.NewScanner(cmd.Stdout)
+		for scanner.Scan() {
+			// Format is:
+			// :100644 100644 c5b3d83a7542255ec7856487baa5e83d65b1624c 9e82ac1b514be060945392291b5b3108c22f6fe3 M foo.gif
+			// :<old mode> <new mode> <old sha1> <new sha1> <status>\t<file name>[\t<file name>]
+			line := scanner.Text()
+			parts := strings.Split(line, "\t")
+			if len(parts) < 2 {
+				continue
+			}
+
+			description := strings.Split(parts[0], " ")
+			files := parts[1:len(parts)]
+
+			if len(description) >= 5 {
+				status := description[4][0:1]
+				sha1 := description[3]
+				if status == "M" {
+					sha1 = description[2] // This one is modified but not added
+				}
+
+				indexMap.Add(sha1, &indexFile{
+					Name:    files[len(files)-1],
+					SrcName: files[0],
+					Status:  status,
+				})
+				revs <- sha1
+			}
+		}
+
+		// Note: deliberately not checking result code here, because doing that
+		// can fail fsck process too early since clean filter will detect errors
+		// and set this to non-zero. How to cope with this better?
+		// stderr, _ := ioutil.ReadAll(cmd.Stderr)
+		// err := cmd.Wait()
+		// if err != nil {
+		// 	errchan <- fmt.Errorf("Error in git diff-index: %v %v", err, string(stderr))
+		// }
+		cmd.Wait()
+		close(revs)
+		close(errchan)
+	}()
+
+	return tools.NewStringChannelWrapper(revs, errchan), nil
+}
+
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 // catFileBatchCheck uses git cat-file --batch-check to get the type
 // and size of a git object. Any object that isn't of type blob and
 // under the blobSizeCutoff will be ignored. revs is a channel over
 // which strings containing git sha1s will be sent. It returns a channel
 // from which sha1 strings can be read.
+<<<<<<< HEAD
 func catFileBatchCheck(revs *StringChannelWrapper) (*StringChannelWrapper, error) {
 	smallRevCh := make(chan string, chanBufSize)
 	errCh := make(chan error, 2) // up to 2 errors, one from each goroutine
@@ -60,16 +502,85 @@ func catFileBatchCheck(revs *StringChannelWrapper) (*StringChannelWrapper, error
 		return nil, err
 	}
 	return NewStringChannelWrapper(smallRevCh, errCh), nil
+=======
+func catFileBatchCheck(revs *tools.StringChannelWrapper) (*tools.StringChannelWrapper, error) {
+	cmd, err := startCommand("git", "cat-file", "--batch-check")
+	if err != nil {
+		return nil, err
+	}
+
+	smallRevs := make(chan string, chanBufSize)
+	errchan := make(chan error, 2) // up to 2 errors, one from each goroutine
+
+	go func() {
+		scanner := bufio.NewScanner(cmd.Stdout)
+		for scanner.Scan() {
+			line := scanner.Text()
+			lineLen := len(line)
+
+			// Format is:
+			// <sha1> <type> <size>
+			// type is at a fixed spot, if we see that it's "blob", we can avoid
+			// splitting the line just to get the size.
+			if lineLen < 46 {
+				continue
+			}
+
+			if line[41:45] != "blob" {
+				continue
+			}
+
+			size, err := strconv.Atoi(line[46:lineLen])
+			if err != nil {
+				continue
+			}
+
+			if size < blobSizeCutoff {
+				smallRevs <- line[0:40]
+			}
+		}
+
+		stderr, _ := ioutil.ReadAll(cmd.Stderr)
+		err := cmd.Wait()
+		if err != nil {
+			errchan <- fmt.Errorf("Error in git cat-file --batch-check: %v %v", err, string(stderr))
+		}
+		close(smallRevs)
+		close(errchan)
+	}()
+
+	go func() {
+		for r := range revs.Results {
+			cmd.Stdin.Write([]byte(r + "\n"))
+		}
+		err := revs.Wait()
+		if err != nil {
+			// We can share errchan with other goroutine since that won't close it
+			// until we close the stdin below
+			errchan <- err
+		}
+
+		cmd.Stdin.Close()
+	}()
+
+	return tools.NewStringChannelWrapper(smallRevs, errchan), nil
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 }
 
 // catFileBatch uses git cat-file --batch to get the object contents
 // of a git object, given its sha1. The contents will be decoded into
 // a Git LFS pointer. revs is a channel over which strings containing Git SHA1s
 // will be sent. It returns a channel from which point.Pointers can be read.
+<<<<<<< HEAD
 func catFileBatch(revs *StringChannelWrapper) (*PointerChannelWrapper, error) {
 	pointerCh := make(chan *WrappedPointer, chanBufSize)
 	errCh := make(chan error, 5) // shared by 2 goroutines & may add more detail errors?
 	if err := runCatFileBatch(pointerCh, revs, errCh); err != nil {
+=======
+func catFileBatch(revs *tools.StringChannelWrapper) (*PointerChannelWrapper, error) {
+	cmd, err := startCommand("git", "cat-file", "--batch")
+	if err != nil {
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 		return nil, err
 	}
 	return NewPointerChannelWrapper(pointerCh, errCh), nil
@@ -538,6 +1049,7 @@ func parseLogOutputToPointers(log io.Reader, dir LogDiffDirection,
 	finishLastPointer()
 }
 
+<<<<<<< HEAD
 // Interface for all types of wrapper around a channel of results and an error channel
 // Implementors will expose a type-specific channel for results
 // Call the Wait() function after processing the results channel to catch any errors
@@ -568,6 +1080,8 @@ func (w *BaseChannelWrapper) Wait() error {
 }
 
 >>>>>>> refs/remotes/git-lfs/1.5/filepathfilter
+=======
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 // ChannelWrapper for pointer Scan* functions to more easily return async error data via Wait()
 // See NewPointerChannelWrapper for construction / use
 type PointerChannelWrapper struct {
@@ -580,6 +1094,7 @@ type PointerChannelWrapper struct {
 // Scan function is required to create error channel large enough not to block (usually 1 is ok)
 func NewPointerChannelWrapper(pointerChan <-chan *WrappedPointer, errorChan <-chan error) *PointerChannelWrapper {
 	return &PointerChannelWrapper{tools.NewBaseChannelWrapper(errorChan), pointerChan}
+<<<<<<< HEAD
 }
 
 // ChannelWrapper for string channel functions to more easily return async error data via Wait()
@@ -594,6 +1109,8 @@ type StringChannelWrapper struct {
 // Caller can use s.Results directly for normal processing then call Wait() to finish & check for errors
 func NewStringChannelWrapper(stringChan <-chan string, errorChan <-chan error) *StringChannelWrapper {
 	return &StringChannelWrapper{tools.NewBaseChannelWrapper(errorChan), stringChan}
+=======
+>>>>>>> refs/remotes/git-lfs/locking-workflow
 }
 
 // ChannelWrapper for TreeBlob channel functions to more easily return async error data via Wait()
